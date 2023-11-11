@@ -2,19 +2,19 @@
 
 ## Description
 
-This agent detects transactions with large Tether transfers
+This agent detects when a bot is deployed from Nethermind Deployer Address (Nethermind Forta deployer (address: 0x88dC3a2284FA62e0027d6D6B1fCfDd2141a143b8)
 
 ## Supported Chains
 
 - Ethereum
-- List any other chains this agent can support e.g. BSC
+
 
 ## Alerts
 
 Describe each of the type of alerts fired by this agent
 
 - FORTA-1
-  - Fired when a transaction contains a Tether transfer over 10,000 USDT
+  - Fired when a Nethermind Forta deployer address deploys a bot: 0x88dC3a2284FA62e0027d6D6B1fCfDd2141a143b8
   - Severity is always set to "low" (mention any conditions where it could be something else)
   - Type is always set to "info" (mention any conditions where it could be something else)
   - Mention any other type of metadata fields included with this alert
@@ -23,4 +23,4 @@ Describe each of the type of alerts fired by this agent
 
 The agent behaviour can be verified with the following transactions:
 
-- 0x3a0f757030beec55c22cbc545dd8a844cbbb2e6019461769e1bc3f3a95d10826 (15,000 USDT)
+- (x transaction address, to be decided on)
