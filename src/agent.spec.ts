@@ -105,7 +105,7 @@ describe("bot deployment agent", () => {
     });
 
   //multiple bot deployments case
-  it("returns a finding if there is a bot deployment", async () => {
+  it("returns a finding if there is multiple bot deployments", async () => {
     mockTxEvent = new TestTransactionEvent()
     .setFrom(BOT_DEPLOYER_ADDRESS)
     .setTo(FORTA_BOT_REGISTRY)
