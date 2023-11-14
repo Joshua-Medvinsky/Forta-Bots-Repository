@@ -1,74 +1,173 @@
 import {
-  FindingType,
-  FindingSeverity,
   Finding,
-  HandleTransaction,
+  FindingSeverity,
+  FindingType,
   createTransactionEvent,
-  ethers,
+  HandleTransaction,
+  TransactionEvent,
+  
 } from "forta-agent";
-import agent, {
-  ERC20_TRANSFER_EVENT,
-  TETHER_ADDRESS,
-  TETHER_DECIMALS,
-} from "./agent";
+import { TestTransactionEvent } from "forta-agent-tools/lib/test";
+import provideHandleTransaction from "./agent";
+import { Interface } from "@ethersproject/abi";
+import { FORTA_BOT_REGISTRY,BOT_DEPLOYER_ADDRESS, NEW_AGENT_FUNCTION_SIGNATURE} from "./constants";
+import { BigNumber } from "ethers";
 
-describe("high tether transfer agent", () => {
+//mock txs data:
+
+const mockTxEventOne = {
+  agentId:"123456",
+  owner: BOT_DEPLOYER_ADDRESS,
+  chainIds:["56"],
+  metadata: "Dummy info 1",
+}
+
+const mockTxEventTwo = {
+  agentId:"654321",
+  owner: BOT_DEPLOYER_ADDRESS,
+  chainIds:["56"],
+  metadata: "Dummy info 2",
+}
+
+
+describe("bot deployment agent", () => {
   let handleTransaction: HandleTransaction;
-  const mockTxEvent = createTransactionEvent({} as any);
-
+  let mockTxEvent = createTransactionEvent({} as any);
+  let findings =
   beforeAll(() => {
-    handleTransaction = agent.handleTransaction;
+    handleTransaction = provideHandleTransaction(FORTA_BOT_REGISTRY,BOT_DEPLOYER_ADDRESS,NEW_AGENT_FUNCTION_SIGNATURE);
   });
 
+  const proxyInterface = new Interface([NEW_AGENT_FUNCTION_SIGNATURE]);
+
   describe("handleTransaction", () => {
-    it("returns empty findings if there are no Tether transfers", async () => {
-      mockTxEvent.filterLog = jest.fn().mockReturnValue([]);
-
-      const findings = await handleTransaction(mockTxEvent);
-
+    //no bot deployments case
+    it("returns empty findings if there are no bot deployments", async () => {
+      mockTxEvent = new TestTransactionEvent();
+      findings = await handleTransaction(mockTxEvent);
       expect(findings).toStrictEqual([]);
-      expect(mockTxEvent.filterLog).toHaveBeenCalledTimes(1);
-      expect(mockTxEvent.filterLog).toHaveBeenCalledWith(
-        ERC20_TRANSFER_EVENT,
-        TETHER_ADDRESS
-      );
     });
+    //from != to deployer address case
+    it("returns empty findings if the deployer is NOT Nethermind", async()=>{
+      mockTxEvent = new TestTransactionEvent()
+      .setFrom("0x12345") //set the from value to a dummy value thats not the nethermind contract address
+      .setTo(FORTA_BOT_REGISTRY)
+      .addTraces({
+        function: proxyInterface.getFunction("newAgent"),
+        to: FORTA_BOT_REGISTRY, 
+        from: "0x12345",
+        arguments: [
+          mockTxEventOne.agentId,
+          mockTxEventOne.owner,
+          mockTxEventOne.metadata,
+          [BigNumber.from(mockTxEventOne.chainIds[0])],
+        ],
+      });
 
-    it("returns a finding if there is a Tether transfer over 10,000", async () => {
-      const mockTetherTransferEvent = {
-        args: {
-          from: "0xabc",
-          to: "0xdef",
-          value: ethers.BigNumber.from("20000000000"), //20k with 6 decimals
-        },
-      };
-      mockTxEvent.filterLog = jest
-        .fn()
-        .mockReturnValue([mockTetherTransferEvent]);
+      findings = await handleTransaction(mockTxEvent);
+      expect(findings).toStrictEqual([]);
+    })
+    //1 bot deployment case
+    it("returns a finding if there is a bot deployment", async () => {
+      mockTxEvent = new TestTransactionEvent()
+      .setFrom(BOT_DEPLOYER_ADDRESS)
+      .setTo(FORTA_BOT_REGISTRY)
+      .addTraces({
+        function: proxyInterface.getFunction("newAgent"),
+        to: FORTA_BOT_REGISTRY, 
+        from: BOT_DEPLOYER_ADDRESS,
+        arguments: [
+          mockTxEventOne.agentId,
+          mockTxEventOne.owner,
+          mockTxEventOne.metadata,
+          [BigNumber.from(mockTxEventOne.chainIds[0])],
+        ],
+      });
 
-      const findings = await handleTransaction(mockTxEvent);
+      findings = await handleTransaction(mockTxEvent);
 
-      const normalizedValue = mockTetherTransferEvent.args.value.div(
-        10 ** TETHER_DECIMALS
-      );
+     //make sure findings is equal to the mock transaction we created
       expect(findings).toStrictEqual([
-        Finding.fromObject({
-          name: "High Tether Transfer",
-          description: `High amount of USDT transferred: ${normalizedValue}`,
-          alertId: "FORTA-1",
-          severity: FindingSeverity.Low,
+        expect.objectContaining({
+          name: "Nethermind Bot Deployment Detector",
+          description: "Detects Bots Deployed by Nethermind",
+          alertId: "FORTA-123",
+          severity: FindingSeverity.Info,
           type: FindingType.Info,
           metadata: {
-            to: mockTetherTransferEvent.args.to,
-            from: mockTetherTransferEvent.args.from,
+            agentId:mockTxEventOne.agentId.toString(),
+            owner:mockTxEventOne.owner,
+            metadata: mockTxEventOne.metadata,
+            chainIds:mockTxEventOne.chainIds[0],
           },
         }),
       ]);
-      expect(mockTxEvent.filterLog).toHaveBeenCalledTimes(1);
-      expect(mockTxEvent.filterLog).toHaveBeenCalledWith(
-        ERC20_TRANSFER_EVENT,
-        TETHER_ADDRESS
-      );
     });
+
+  //multiple bot deployments case
+  it("returns a finding if there is a bot deployment", async () => {
+    mockTxEvent = new TestTransactionEvent()
+    .setFrom(BOT_DEPLOYER_ADDRESS)
+    .setTo(FORTA_BOT_REGISTRY)
+    .addTraces({
+      function: proxyInterface.getFunction("newAgent"),
+      to: FORTA_BOT_REGISTRY, 
+      from: BOT_DEPLOYER_ADDRESS,
+      arguments: [
+        mockTxEventOne.agentId,
+        mockTxEventOne.owner,
+        mockTxEventOne.metadata,
+        [BigNumber.from(mockTxEventOne.chainIds[0])],
+      ],
+    })
+    .addTraces({
+      function: proxyInterface.getFunction("newAgent"),
+      to: FORTA_BOT_REGISTRY, 
+      from: BOT_DEPLOYER_ADDRESS,
+      arguments: [
+        mockTxEventTwo.agentId,
+        mockTxEventTwo.owner,
+        mockTxEventTwo.metadata,
+        [BigNumber.from(mockTxEventTwo.chainIds[0])],
+      ],
+    })
+    ;
+
+    findings = await handleTransaction(mockTxEvent);
+
+   //make sure findings is equal to the mock transactions we created
+    expect(findings).toStrictEqual([
+      expect.objectContaining({
+        name: "Nethermind Bot Deployment Detector",
+        description: "Detects Bots Deployed by Nethermind",
+        alertId: "FORTA-123",
+        severity: FindingSeverity.Info,
+        type: FindingType.Info,
+        metadata: {
+          agentId:mockTxEventOne.agentId.toString(),
+          owner:mockTxEventOne.owner,
+          metadata: mockTxEventOne.metadata,
+          chainIds:mockTxEventOne.chainIds[0],
+        },
+      }),
+      expect.objectContaining({
+        name: "Nethermind Bot Deployment Detector",
+        description: "Detects Bots Deployed by Nethermind",
+        alertId: "FORTA-123",
+        severity: FindingSeverity.Info,
+        type: FindingType.Info,
+        metadata: {
+          agentId:mockTxEventTwo.agentId.toString(),
+          owner:mockTxEventTwo.owner,
+          metadata: mockTxEventTwo.metadata,
+          chainIds:mockTxEventTwo.chainIds[0],
+        },
+      })
+      ,
+    ]);
   });
+
+  });
+
+
 });
