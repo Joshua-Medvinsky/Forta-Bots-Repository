@@ -1,45 +1,44 @@
-import {
-  Finding,
-  HandleTransaction,
-  TransactionEvent,
-  FindingSeverity, 
-  FindingType,    
-} from "forta-agent";
+import { Finding, HandleTransaction, TransactionEvent, FindingSeverity, FindingType } from "forta-agent";
 import { FORTA_BOT_REGISTRY, BOT_DEPLOYER_ADDRESS, NEW_AGENT_FUNCTION_SIGNATURE } from "./constants";
+import { Interface } from "@ethersproject/abi";
 
-
-export default function provideHandleTransaction(
-  proxyAddress: string,
-  deployerAddress: string,
+export function provideHandleTransaction(
+  fortaRegistryAddress: string,
+  nethermindDeployerAddress: string,
   functionABI: string
 ): HandleTransaction {
-  return async (txEvent: TransactionEvent):Promise<Finding[]>  => {
+  return async function handleTransaction(txEvent: TransactionEvent) {
     const findings: Finding[] = [];
     //check from address with deployer address
-    if (txEvent.from != deployerAddress.toLowerCase()) {
+    if (txEvent.from != nethermindDeployerAddress.toLowerCase()) {
       return findings;
     }
-
+    //check function ABI
+    const proxyInterface = new Interface([NEW_AGENT_FUNCTION_SIGNATURE]);
+    if (functionABI != NEW_AGENT_FUNCTION_SIGNATURE) {
+      console.log("FOOEY");
+      return findings;
+    }
     // Store/filter bot transactions
-    const botTxs = txEvent.filterFunction(functionABI, proxyAddress);
+    const newAgentTxs = txEvent.filterFunction(functionABI, fortaRegistryAddress);
 
     // Iterate through transactions
-    botTxs.forEach((tx) => {
+    newAgentTxs.forEach((tx) => {
       const { agentId, owner, chainIds, metadata } = tx.args;
-      
+
       //Create a Finding object and push it into the findings array
       findings.push(
         Finding.fromObject({
           name: "Nethermind Bot Deployment Detector",
           description: "Detects Bots Deployed by Nethermind",
           alertId: "FORTA-123",
-          severity: FindingSeverity.Info, 
-          type: FindingType.Info,        
+          severity: FindingSeverity.Info,
+          type: FindingType.Info,
           metadata: {
-            agentId:agentId.toString(),  
+            agentId: agentId.toString(),
             owner,
-            chainIds:chainIds.toString(),
-            metadata: metadata,
+            chainIds: chainIds.toString(),
+            metadata,
           },
         })
       );
@@ -49,3 +48,6 @@ export default function provideHandleTransaction(
   };
 }
 
+export default {
+  handleTransaction: provideHandleTransaction(FORTA_BOT_REGISTRY, BOT_DEPLOYER_ADDRESS, NEW_AGENT_FUNCTION_SIGNATURE),
+};
