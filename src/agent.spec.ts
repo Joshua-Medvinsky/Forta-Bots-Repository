@@ -5,12 +5,17 @@ import {
   createTransactionEvent,
   HandleTransaction,
   TransactionEvent,
-
 } from "forta-agent";
+import {
+  FORTA_BOT_REGISTRY,
+  BOT_DEPLOYER_ADDRESS,
+  NEW_AGENT_FUNCTION_SIGNATURE,
+  INCORRECT_FUNCTION_SIGNATURE,
+  EXTERNAL_AGENT_FUNCTION_SIGNATURE,
+} from "./constants";
 import { TestTransactionEvent } from "forta-agent-tools/lib/test";
 import { createAddress } from "forta-agent-tools";
 import { Interface } from "@ethersproject/abi";
-import { FORTA_BOT_REGISTRY, BOT_DEPLOYER_ADDRESS, NEW_AGENT_FUNCTION_SIGNATURE, TEST_AGENT_FUNCTION_SIGNATURE } from "./constants";
 import { BigNumber } from "ethers";
 import { provideHandleTransaction } from "./agent";
 //mock txs data:
@@ -20,35 +25,37 @@ const mockTxEventOne = {
   owner: BOT_DEPLOYER_ADDRESS,
   chainIds: ["56"],
   metadata: "Dummy info 1",
-}
+};
 
 const mockTxEventTwo = {
   agentId: "654321",
   owner: BOT_DEPLOYER_ADDRESS,
   chainIds: ["56"],
   metadata: "Dummy info 2",
-}
+};
 
-
+let mockTxEvent = new TestTransactionEvent();
 describe("bot deployment agent", () => {
   let handleTransaction: HandleTransaction;
-  let mockTxEvent = createTransactionEvent({} as any);
   let findings = [];
   beforeAll(() => {
-    handleTransaction = provideHandleTransaction(FORTA_BOT_REGISTRY, BOT_DEPLOYER_ADDRESS, NEW_AGENT_FUNCTION_SIGNATURE);
+    handleTransaction = provideHandleTransaction(
+      FORTA_BOT_REGISTRY,
+      BOT_DEPLOYER_ADDRESS,
+      NEW_AGENT_FUNCTION_SIGNATURE
+    );
   });
 
   const proxyInterface = new Interface([NEW_AGENT_FUNCTION_SIGNATURE]);
 
   describe("handleTransaction", () => {
     it("returns empty findings if there are no bot deployments", async () => {
-      mockTxEvent = new TestTransactionEvent();
       findings = await handleTransaction(mockTxEvent);
       expect(findings).toStrictEqual([]);
     });
     it("returns empty findings if the deployer is NOT Nethermind", async () => {
       const fromAddress = createAddress("0xad");
-      mockTxEvent = new TestTransactionEvent()
+      mockTxEvent
         .setFrom(fromAddress) //set the from value to a dummy value thats not the nethermind contract address
         .setTo(FORTA_BOT_REGISTRY)
         .addTraces({
@@ -65,7 +72,7 @@ describe("bot deployment agent", () => {
 
       findings = await handleTransaction(mockTxEvent);
       expect(findings).toStrictEqual([]);
-    })
+    });
     it("returns a finding if there is a bot deployment", async () => {
       mockTxEvent = new TestTransactionEvent()
         .setFrom(BOT_DEPLOYER_ADDRESS)
@@ -84,7 +91,6 @@ describe("bot deployment agent", () => {
 
       findings = await handleTransaction(mockTxEvent);
 
-      //make sure findings is equal to the mock transaction we created
       expect(findings).toStrictEqual([
         expect.objectContaining({
           name: "Nethermind Bot Deployment Detector",
@@ -126,8 +132,7 @@ describe("bot deployment agent", () => {
             mockTxEventTwo.metadata,
             [BigNumber.from(mockTxEventTwo.chainIds[0])],
           ],
-        })
-        ;
+        });
 
       findings = await handleTransaction(mockTxEvent);
 
@@ -158,12 +163,11 @@ describe("bot deployment agent", () => {
             metadata: mockTxEventTwo.metadata,
             chainIds: mockTxEventTwo.chainIds[0],
           },
-        })
-        ,
+        }),
       ]);
     });
     it("returns empty findings if there is a bot deployment with the wrong function abi", async () => {
-      const newProxyInterface = new Interface([TEST_AGENT_FUNCTION_SIGNATURE]);
+      const newProxyInterface = new Interface([INCORRECT_FUNCTION_SIGNATURE]);
 
       mockTxEvent = new TestTransactionEvent()
         .setFrom(BOT_DEPLOYER_ADDRESS)
@@ -186,13 +190,18 @@ describe("bot deployment agent", () => {
       expect(findings).toStrictEqual([]);
     });
     it("returns empty findings if there is a bot deployment with a call to newAgent function NOT in the fortaContract", async () => {
-      const newProxyInterface = new Interface([TEST_AGENT_FUNCTION_SIGNATURE]);
-
-      mockTxEvent = new TestTransactionEvent()
+      const newProxyInterface = new Interface([EXTERNAL_AGENT_FUNCTION_SIGNATURE]);
+      // call provideHandle Transaction with external function ABI
+      handleTransaction = provideHandleTransaction(
+        FORTA_BOT_REGISTRY,
+        BOT_DEPLOYER_ADDRESS,
+        EXTERNAL_AGENT_FUNCTION_SIGNATURE
+      );
+      let mockTxEvent = new TestTransactionEvent()
         .setFrom(BOT_DEPLOYER_ADDRESS)
         .setTo(FORTA_BOT_REGISTRY)
         .addTraces({
-          function: newProxyInterface.getFunction("fooAgent"),
+          function: newProxyInterface.getFunction("newAgent"),
           to: FORTA_BOT_REGISTRY,
           from: BOT_DEPLOYER_ADDRESS,
           arguments: [
@@ -209,6 +218,4 @@ describe("bot deployment agent", () => {
       expect(findings).toStrictEqual([]);
     });
   });
-
-
 });

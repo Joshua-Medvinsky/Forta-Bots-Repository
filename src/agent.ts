@@ -1,6 +1,5 @@
 import { Finding, HandleTransaction, TransactionEvent, FindingSeverity, FindingType } from "forta-agent";
 import { FORTA_BOT_REGISTRY, BOT_DEPLOYER_ADDRESS, NEW_AGENT_FUNCTION_SIGNATURE } from "./constants";
-import { Interface } from "@ethersproject/abi";
 
 export function provideHandleTransaction(
   fortaRegistryAddress: string,
@@ -13,10 +12,8 @@ export function provideHandleTransaction(
     if (txEvent.from != nethermindDeployerAddress.toLowerCase()) {
       return findings;
     }
-    //check function ABI
-    const proxyInterface = new Interface([NEW_AGENT_FUNCTION_SIGNATURE]);
+    //check if the function ABI passed in is different from the forta bot ABI (External check)
     if (functionABI != NEW_AGENT_FUNCTION_SIGNATURE) {
-      console.log("FOOEY");
       return findings;
     }
     // Store/filter bot transactions
@@ -25,7 +22,6 @@ export function provideHandleTransaction(
     // Iterate through transactions
     newAgentTxs.forEach((tx) => {
       const { agentId, owner, chainIds, metadata } = tx.args;
-
       //Create a Finding object and push it into the findings array
       findings.push(
         Finding.fromObject({
