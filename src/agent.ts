@@ -12,10 +12,7 @@ export function provideHandleTransaction(
     if (txEvent.from != nethermindDeployerAddress.toLowerCase()) {
       return findings;
     }
-    //check if the function ABI passed in is different from the forta bot ABI (External check)
-    if (functionABI != NEW_AGENT_FUNCTION_SIGNATURE) {
-      return findings;
-    }
+
     // Store/filter bot transactions
     const newAgentTxs = txEvent.filterFunction(functionABI, fortaRegistryAddress);
 

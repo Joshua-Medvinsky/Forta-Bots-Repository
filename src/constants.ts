@@ -4,5 +4,3 @@ export const NEW_AGENT_FUNCTION_SIGNATURE: string =
   "function newAgent(uint256 agentId, address owner, string metadata, uint256[] chainIds) public";
 export const INCORRECT_FUNCTION_SIGNATURE: string =
   "function fooAgent(uint256 agentId, address owner, string metadata, uint256[] chainIds) public";
-export const EXTERNAL_AGENT_FUNCTION_SIGNATURE: string =
-  "function newAgent(uint256 agentId, address owner, string metadata, uint256[] chainIds) external";

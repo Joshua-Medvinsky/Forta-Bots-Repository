@@ -11,7 +11,6 @@ import {
   BOT_DEPLOYER_ADDRESS,
   NEW_AGENT_FUNCTION_SIGNATURE,
   INCORRECT_FUNCTION_SIGNATURE,
-  EXTERNAL_AGENT_FUNCTION_SIGNATURE,
 } from "./constants";
 import { TestTransactionEvent } from "forta-agent-tools/lib/test";
 import { createAddress } from "forta-agent-tools";
@@ -21,16 +20,16 @@ import { provideHandleTransaction } from "./agent";
 //mock txs data:
 
 const mockTxEventOne = {
-  agentId: "123456",
+  agentId: BigNumber.from("56789098765"),
   owner: BOT_DEPLOYER_ADDRESS,
-  chainIds: ["56"],
+  chainIds: ["137"],
   metadata: "Dummy info 1",
 };
 
 const mockTxEventTwo = {
-  agentId: "654321",
+  agentId: BigNumber.from("56789098765"),
   owner: BOT_DEPLOYER_ADDRESS,
-  chainIds: ["56"],
+  chainIds: ["137"],
   metadata: "Dummy info 2",
 };
 
@@ -168,7 +167,7 @@ describe("bot deployment agent", () => {
     });
     it("returns empty findings if there is a bot deployment with the wrong function abi", async () => {
       const newProxyInterface = new Interface([INCORRECT_FUNCTION_SIGNATURE]);
-
+      const fromAddress = createAddress("0xad");
       mockTxEvent = new TestTransactionEvent()
         .setFrom(BOT_DEPLOYER_ADDRESS)
         .setTo(FORTA_BOT_REGISTRY)
@@ -190,19 +189,14 @@ describe("bot deployment agent", () => {
       expect(findings).toStrictEqual([]);
     });
     it("returns empty findings if there is a bot deployment with a call to newAgent function NOT in the fortaContract", async () => {
-      const newProxyInterface = new Interface([EXTERNAL_AGENT_FUNCTION_SIGNATURE]);
-      // call provideHandle Transaction with external function ABI
-      handleTransaction = provideHandleTransaction(
-        FORTA_BOT_REGISTRY,
-        BOT_DEPLOYER_ADDRESS,
-        EXTERNAL_AGENT_FUNCTION_SIGNATURE
-      );
+      const newProxyInterface = new Interface([NEW_AGENT_FUNCTION_SIGNATURE]);
+      const toAddress = createAddress("0xab");
       let mockTxEvent = new TestTransactionEvent()
         .setFrom(BOT_DEPLOYER_ADDRESS)
-        .setTo(FORTA_BOT_REGISTRY)
+        .setTo(toAddress)
         .addTraces({
           function: newProxyInterface.getFunction("newAgent"),
-          to: FORTA_BOT_REGISTRY,
+          to: toAddress,
           from: BOT_DEPLOYER_ADDRESS,
           arguments: [
             mockTxEventOne.agentId,
