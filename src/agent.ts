@@ -1,92 +1,87 @@
 import {
-  BlockEvent,
   Finding,
-  Initialize,
-  HandleBlock,
-  HealthCheck,
   HandleTransaction,
-  HandleAlert,
-  AlertEvent,
   TransactionEvent,
   FindingSeverity,
   FindingType,
+  getEthersProvider,
 } from "forta-agent";
+import {
+  UNISWAP_FACTORY_ADDRESS,
+  POOL_INIT_CODE_HASH,
+  UNISWAP_POOL_FUNCTION_SIGNATURE,
+  SWAP_FUNCTION_SIGNATURE,
+} from "./constants";
+import { providers, ethers } from "ethers";
+import { getPoolValues, isUniswapAddress, computeAddress } from "./utils";
 
-export const ERC20_TRANSFER_EVENT =
-  "event Transfer(address indexed from, address indexed to, uint256 value)";
-export const TETHER_ADDRESS = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
-export const TETHER_DECIMALS = 6;
-let findingsCount = 0;
+export function provideHandleTransaction(
+  provider: ethers.providers.Provider,
+  uniswapPoolABI: string[],
+  swapABI: string,
+  factoryAddress: string
+): HandleTransaction {
+  return async function handleTransaction(txEvent: TransactionEvent) {
+    const findings: Finding[] = [];
 
-const handleTransaction: HandleTransaction = async (
-  txEvent: TransactionEvent
-) => {
-  const findings: Finding[] = [];
+    // Store/filter bot transactions
+    const swapTxs = txEvent.filterLog(SWAP_FUNCTION_SIGNATURE);
 
-  // limiting this agent to emit only 5 findings so that the alert feed is not spammed
-  if (findingsCount >= 5) return findings;
+    // Iterate through transactions
+    for (const tx of swapTxs) {
+      try {
+        const [sender, recipient, amount0, amount1, liquidity] = tx.args;
 
-  // filter the transaction logs for Tether transfer events
-  const tetherTransferEvents = txEvent.filterLog(
-    ERC20_TRANSFER_EVENT,
-    TETHER_ADDRESS
-  );
+        const poolAddress = tx.address;
 
-  tetherTransferEvents.forEach((transferEvent) => {
-    // extract transfer event arguments
-    const { to, from, value } = transferEvent.args;
-    // shift decimals of transfer value
-    const normalizedValue = value.div(10 ** TETHER_DECIMALS);
+        const { token0, token1, fee } = await getPoolValues(poolAddress, provider, uniswapPoolABI, txEvent.blockNumber);
 
-    // if more than 10,000 Tether were transferred, report it
-    if (normalizedValue.gt(10000)) {
-      findings.push(
-        Finding.fromObject({
-          name: "High Tether Transfer",
-          description: `High amount of USDT transferred: ${normalizedValue}`,
-          alertId: "FORTA-1",
-          severity: FindingSeverity.Low,
-          type: FindingType.Info,
-          metadata: {
-            to,
-            from,
-          },
-        })
-      );
-      findingsCount++;
+        const uniswapAddressBool = await isUniswapAddress(
+          poolAddress,
+          provider,
+          factoryAddress,
+          txEvent.blockNumber,
+          token0,
+          token1,
+          fee
+        );
+
+        // Create a Finding object and push it into the findings array
+        if (uniswapAddressBool == false) {
+          return findings;
+        }
+        findings.push(
+          Finding.fromObject({
+            name: "Uniswap V3 Swap Event Detector",
+            description: "Detects new Swap events from Uniswap V3 pool",
+            alertId: "UNISWAP-123",
+            severity: FindingSeverity.Info,
+            type: FindingType.Info,
+            protocol: "UniswapV3",
+            metadata: {
+              poolAddress: poolAddress.toLowerCase(),
+              sender: sender,
+              recipient: recipient,
+              amount0: amount0.toString(),
+              amount1: amount1.toString(),
+              liquidity: liquidity.toString(),
+            },
+          })
+        );
+      } catch (e) {
+        return findings;
+      }
     }
-  });
 
-  return findings;
-};
-
-// const initialize: Initialize = async () => {
-//   // do some initialization on startup e.g. fetch data
-// }
-
-// const handleBlock: HandleBlock = async (blockEvent: BlockEvent) => {
-//   const findings: Finding[] = [];
-//   // detect some block condition
-//   return findings;
-// }
-
-// const handleAlert: HandleAlert = async (alertEvent: AlertEvent) => {
-//   const findings: Finding[] = [];
-//   // detect some alert condition
-//   return findings;
-// }
-
-// const healthCheck: HealthCheck = async () => {
-//   const errors: string[] = [];
-  // detect some health check condition
-  // errors.push("not healthy due to some condition")
-  // return errors;
-// }
+    return findings;
+  };
+}
 
 export default {
-  // initialize,
-  handleTransaction,
-  // healthCheck,
-  // handleBlock,
-  // handleAlert
+  handleTransaction: provideHandleTransaction(
+    getEthersProvider(),
+    UNISWAP_POOL_FUNCTION_SIGNATURE,
+    SWAP_FUNCTION_SIGNATURE,
+    UNISWAP_FACTORY_ADDRESS
+  ),
 };
