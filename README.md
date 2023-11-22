@@ -2,11 +2,12 @@
 
 ## Description
 
-This agent detects when a bot is deployed from Nethermind Deployer Address (Nethermind Forta deployer (address: 0x88dC3a2284FA62e0027d6D6B1fCfDd2141a143b8)
+This agent detects when a swap is made on Uniswap V3 pools
 
 ## Supported Chains
 
 - Ethereum
+- Polygon
 
 
 ## Alerts
@@ -14,13 +15,17 @@ This agent detects when a bot is deployed from Nethermind Deployer Address (Neth
 Describe each of the type of alerts fired by this agent
 
 - FORTA-1
-  - Fired when a Nethermind Forta deployer address deploys a bot: 0x88dC3a2284FA62e0027d6D6B1fCfDd2141a143b8
-  - Severity is always set to "low" (mention any conditions where it could be something else)
-  - Type is always set to "info" (mention any conditions where it could be something else)
-  - Mention any other type of metadata fields included with this alert
-
+  - Fired when a new swap is made onUniswap V3 pools
+  - Severity is always set to "low" 
+  - Type is always set to "info" 
+  - Metadata:
+    -sender: The initiator of the smart contract call.
+    -recipient: The party receiving the swapped tokens.
+    -amount0: The quantity of tokens being exchanged.
+    -amount1: The quantity of tokens acquired.
+    -poolAddress: The address of the smart contract representing the Uniswap V3 pool.
+    -liquidity: The total liquidity amount involved in the swap.
 ## Test Data
 
-The agent behaviour can be verified with the following transactions:
+The agent behaviour can be verified with the tests in agent.ts.spec
 
-- (x transaction address, to be decided on)
