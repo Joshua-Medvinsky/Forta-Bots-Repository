@@ -24,4 +24,3 @@ Describe each of the type of alerts fired by this agent
 The agent behaviour can be verified with the following transactions:
 
 - (x transaction address, to be decided on)
-
