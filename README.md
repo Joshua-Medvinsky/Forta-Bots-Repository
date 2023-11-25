@@ -2,7 +2,7 @@
 
 ## Description
 
-This agent detects when a swap is made on Uniswap V3 pools
+This bot detects when a swap is made on Uniswap V3 pools
 
 ## Supported Chains
 
