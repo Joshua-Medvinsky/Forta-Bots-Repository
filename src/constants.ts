@@ -1,5 +1,7 @@
-export const UNISWAP_FACTORY_ADDRESS = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
-export const POOL_INIT_CODE_HASH = "0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54";
+export const UNISWAP_FACTORY_ADDRESS =
+  "0x1F98431c8aD98523631AE4a59f267346ea31F984";
+export const POOL_INIT_CODE_HASH =
+  "0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54";
 export const UNISWAP_POOL_FUNCTION_SIGNATURE = [
   "function token0() external view returns (address)",
   "function token1() external view returns (address)",
