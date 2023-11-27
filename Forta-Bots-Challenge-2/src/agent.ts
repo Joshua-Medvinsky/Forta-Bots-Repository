@@ -6,18 +6,14 @@ import {
   FindingType,
   getEthersProvider,
 } from "forta-agent";
-import {
-  UNISWAP_FACTORY_ADDRESS,
-  UNISWAP_POOL_FUNCTION_SIGNATURE,
-  SWAP_FUNCTION_SIGNATURE,
-} from "./constants";
+import { UNISWAP_FACTORY_ADDRESS, UNISWAP_POOL_FUNCTION_SIGNATURE, SWAP_FUNCTION_SIGNATURE } from "./constants";
 import { ethers } from "ethers";
 import { getPoolValues, isUniswapAddress } from "./utils";
 
 export function provideHandleTransaction(
   provider: ethers.providers.Provider,
   uniswapPoolABI: string[],
-  factoryAddress: string,
+  factoryAddress: string
 ): HandleTransaction {
   return async function handleTransaction(txEvent: TransactionEvent) {
     const findings: Finding[] = [];
@@ -31,20 +27,9 @@ export function provideHandleTransaction(
 
         const poolAddress = tx.address;
 
-        const { token0, token1, fee } = await getPoolValues(
-          poolAddress,
-          provider,
-          uniswapPoolABI,
-          txEvent.blockNumber,
-        );
+        const { token0, token1, fee } = await getPoolValues(poolAddress, provider, uniswapPoolABI, txEvent.blockNumber);
 
-        const uniswapAddressBool = await isUniswapAddress(
-          poolAddress,
-          factoryAddress,
-          token0,
-          token1,
-          fee,
-        );
+        const uniswapAddressBool = await isUniswapAddress(poolAddress, factoryAddress, token0, token1, fee);
 
         // Create a Finding object and push it into the findings array
         if (uniswapAddressBool == false) {
@@ -66,7 +51,7 @@ export function provideHandleTransaction(
               amount1: amount1.toString(),
               liquidity: liquidity.toString(),
             },
-          }),
+          })
         );
       } catch (e) {
         return findings;
@@ -81,6 +66,6 @@ export default {
   handleTransaction: provideHandleTransaction(
     getEthersProvider(),
     UNISWAP_POOL_FUNCTION_SIGNATURE,
-    UNISWAP_FACTORY_ADDRESS,
+    UNISWAP_FACTORY_ADDRESS
   ),
 };

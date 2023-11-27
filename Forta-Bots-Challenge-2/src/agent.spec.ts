@@ -1,25 +1,8 @@
-import {
-  Finding,
-  FindingSeverity,
-  FindingType,
-  createTransactionEvent,
-  HandleTransaction,
-  TransactionEvent,
-} from "forta-agent";
-import {
-  UNISWAP_FACTORY_ADDRESS,
-  POOL_INIT_CODE_HASH,
-  UNISWAP_POOL_FUNCTION_SIGNATURE,
-  SWAP_FUNCTION_SIGNATURE,
-} from "./constants";
-import {
-  TestTransactionEvent,
-  MockEthersProvider,
-} from "forta-agent-tools/lib/test";
+import { Finding, FindingSeverity, FindingType, HandleTransaction } from "forta-agent";
+import { POOL_INIT_CODE_HASH, UNISWAP_POOL_FUNCTION_SIGNATURE, SWAP_FUNCTION_SIGNATURE } from "./constants";
+import { TestTransactionEvent, MockEthersProvider } from "forta-agent-tools/lib/test";
 import { createAddress } from "forta-agent-tools";
-import { getEthersProvider } from "forta-agent";
-import { Interface } from "@ethersproject/abi";
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import { provideHandleTransaction } from "./agent";
 import { Provider } from "@ethersproject/abstract-provider";
 import { computeAddress } from "./utils";
@@ -34,11 +17,7 @@ describe("Uniswap V3 Swap Event bot", () => {
   const mockFactoryAddress = createAddress("0xabc");
   let mockProvider = new MockEthersProvider();
   const mockRandAddress = createAddress("0xadc");
-  const mockPoolAddress = computeAddress(
-    mockFactoryAddress,
-    mockPoolValues,
-    POOL_INIT_CODE_HASH,
-  );
+  const mockPoolAddress = computeAddress(mockFactoryAddress, mockPoolValues, POOL_INIT_CODE_HASH);
 
   const mockEvent = [
     createAddress("0x123"),
@@ -52,14 +31,8 @@ describe("Uniswap V3 Swap Event bot", () => {
 
   beforeAll(() => {
     const provider = mockProvider as unknown as Provider;
-    handleTransaction = provideHandleTransaction(
-      provider,
-      UNISWAP_POOL_FUNCTION_SIGNATURE,
-      mockFactoryAddress,
-    );
-    ProxyInterface = new ethers.utils.Interface(
-      UNISWAP_POOL_FUNCTION_SIGNATURE,
-    );
+    handleTransaction = provideHandleTransaction(provider, UNISWAP_POOL_FUNCTION_SIGNATURE, mockFactoryAddress);
+    ProxyInterface = new ethers.utils.Interface(UNISWAP_POOL_FUNCTION_SIGNATURE);
   });
 
   describe("returns empty findings if there are no swap events", () => {
@@ -68,10 +41,7 @@ describe("Uniswap V3 Swap Event bot", () => {
     it("returns empty findings the transaction is not a swap", async () => {
       mockTxEvent = new TestTransactionEvent();
       mockTxEvent.setBlock(0);
-      mockTxEvent
-        .setFrom(mockRandAddress)
-        .setTo(mockPoolAddress)
-        .setValue("123456789");
+      mockTxEvent.setFrom(mockRandAddress).setTo(mockPoolAddress).setValue("123456789");
 
       const findings = await handleTransaction(mockTxEvent);
 
@@ -81,11 +51,7 @@ describe("Uniswap V3 Swap Event bot", () => {
     it("returns empty findings if the swap doesn't occur on Uniswap V3", async () => {
       mockTxEvent = new TestTransactionEvent();
       mockTxEvent.setBlock(0);
-      mockTxEvent.addEventLog(
-        SWAP_FUNCTION_SIGNATURE,
-        mockRandAddress,
-        mockEvent,
-      );
+      mockTxEvent.addEventLog(SWAP_FUNCTION_SIGNATURE, mockRandAddress, mockEvent);
 
       mockProvider.addCallTo(mockRandAddress, 0, ProxyInterface, "token0", {
         inputs: [],
@@ -109,11 +75,7 @@ describe("Uniswap V3 Swap Event bot", () => {
     it("returns a finding if a swap occurs on Uniswap V3", async () => {
       mockTxEvent = new TestTransactionEvent();
       mockTxEvent.setBlock(0);
-      mockTxEvent.addEventLog(
-        SWAP_FUNCTION_SIGNATURE,
-        mockPoolAddress,
-        mockEvent,
-      );
+      mockTxEvent.addEventLog(SWAP_FUNCTION_SIGNATURE, mockPoolAddress, mockEvent);
 
       mockProvider.addCallTo(mockPoolAddress, 0, ProxyInterface, "token0", {
         inputs: [],
