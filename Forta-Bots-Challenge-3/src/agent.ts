@@ -1,12 +1,8 @@
 import {
   Finding,
   HandleBlock,
-  TransactionEvent,
-  FindingSeverity,
-  FindingType,
   getEthersProvider,
   BlockEvent,
-  Alert,
 } from "forta-agent";
 import {
   DAI_ADDRESS,

@@ -1,9 +1,7 @@
 import { ethers, Contract, BigNumber } from "ethers";
-import { Provider } from "@ethersproject/providers";
-import { Finding, FindingSeverity, FindingType, Alert } from "forta-agent";
+import { Finding, FindingSeverity, FindingType } from "forta-agent";
 import {
   L2_FUNCTION_SIGNATURE,
-  L1_ESCROW_FUNCTION_SIGNATURE,
   L2_TOKEN_ADDRESS_MAKER_DAO,
 } from "./constants";
 

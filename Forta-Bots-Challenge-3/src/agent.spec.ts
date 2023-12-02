@@ -30,18 +30,18 @@ const networkOChainID = 10;
 const blockNumber = 25;
 // Mock values when escrow < l2 supply
 const MOCK_VALUES_1 = {
-  OPT_ESCROW_VAL: BigNumber.from("25"),
-  ARB_ESCROW_VAL: BigNumber.from("30"),
-  OPT_L2_VAL: BigNumber.from("100"),
-  ARB_L2_val: BigNumber.from("90"),
+  OPTIMISM_L1_ESCROW_BAL: BigNumber.from("25"),
+  ARBITRUM_L1_ESCROW_BAL: BigNumber.from("30"),
+  OPTIMISM_L2_BAL: BigNumber.from("100"),
+  ARBITRUM_L2_BAL: BigNumber.from("90"),
 };
 
 // Mock values when escrow > l2 supply
 const MOCK_VALUES_2 = {
-  OPT_ESCROW_VAL: BigNumber.from("100"),
-  ARB_ESCROW_VAL: BigNumber.from("90"),
-  OPT_L2_VAL: BigNumber.from("25"),
-  ARB_L2_val: BigNumber.from("30"),
+  OPTIMISM_L1_ESCROW_BAL: BigNumber.from("100"),
+  ARBITRUM_L1_ESCROW_BAL: BigNumber.from("90"),
+  OPTIMISM_L2_BAL: BigNumber.from("25"),
+  ARBITRUM_L2_BAL: BigNumber.from("30"),
 };
 
 const getAlertInput = (): AlertInput => {
@@ -54,8 +54,8 @@ const getAlertInput = (): AlertInput => {
     severity: "Info",
     alertDocumentType: "Alert",
     metadata: {
-      escrowBalanceOptimism: MOCK_VALUES_1.OPT_ESCROW_VAL,
-      escrowBalanceArbitrum: MOCK_VALUES_1.ARB_ESCROW_VAL,
+      escrowBalanceOptimism: MOCK_VALUES_1.OPTIMISM_L1_ESCROW_BAL,
+      escrowBalanceArbitrum: MOCK_VALUES_1.ARBITRUM_L1_ESCROW_BAL,
     },
   };
 
@@ -86,25 +86,25 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
     mockProvider
       .addCallTo(DAI_ADDRESS, blockNumber, L1_PROXY, "balanceOf", {
         inputs: [L1_ESCROW_OPTIMISM],
-        outputs: [MOCK_VALUES_1.OPT_ESCROW_VAL],
+        outputs: [MOCK_VALUES_1.OPTIMISM_L1_ESCROW_BAL],
       })
       .addCallTo(DAI_ADDRESS, blockNumber, L1_PROXY, "balanceOf", {
         inputs: [L1_ESCROW_ARBITRUM],
-        outputs: [MOCK_VALUES_1.ARB_ESCROW_VAL],
+        outputs: [MOCK_VALUES_1.ARBITRUM_L1_ESCROW_BAL],
       });
 
     const findings = await handleBlock(blockEvent);
 
     const expectedFindings = Finding.fromObject({
       name: `Combined supply of optimism and Arbitrum MakerDao escrows on layer 1`,
-      description: `Escrow balances: Arbitrum: ${MOCK_VALUES_1.ARB_ESCROW_VAL} Optimism: ${MOCK_VALUES_1.OPT_ESCROW_VAL}`,
+      description: `Escrow balances: Arbitrum: ${MOCK_VALUES_1.ARBITRUM_L1_ESCROW_BAL} Optimism: ${MOCK_VALUES_1.OPTIMISM_L1_ESCROW_BAL}`,
       alertId: "new block check escrows on layer 1",
       severity: FindingSeverity.Info,
       type: FindingType.Info,
       protocol: "Ethereum",
       metadata: {
-        escrowBalanceOptimism: `${MOCK_VALUES_1.OPT_ESCROW_VAL}`,
-        escrowBalanceArbitrum: `${MOCK_VALUES_1.ARB_ESCROW_VAL}`,
+        escrowBalanceOptimism: `${MOCK_VALUES_1.OPTIMISM_L1_ESCROW_BAL}`,
+        escrowBalanceArbitrum: `${MOCK_VALUES_1.ARBITRUM_L1_ESCROW_BAL}`,
       },
     });
 
@@ -124,7 +124,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
       "totalSupply",
       {
         inputs: [],
-        outputs: [MOCK_VALUES_2.OPT_L2_VAL],
+        outputs: [MOCK_VALUES_2.OPTIMISM_L2_BAL],
       },
     );
 
@@ -146,7 +146,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
       "totalSupply",
       {
         inputs: [],
-        outputs: [MOCK_VALUES_2.ARB_L2_val],
+        outputs: [MOCK_VALUES_2.ARBITRUM_L2_BAL],
       },
     );
 
@@ -169,7 +169,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
       "totalSupply",
       {
         inputs: [],
-        outputs: [MOCK_VALUES_1.OPT_L2_VAL],
+        outputs: [MOCK_VALUES_1.OPTIMISM_L2_BAL],
       },
     );
 
@@ -177,14 +177,14 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
 
     const expectedFindings = Finding.fromObject({
       name: `${networkO} layer 2 dai supply is more then the layer 1 escrow dai balance`,
-      description: `L1Escrow Balance: ${MOCK_VALUES_1.OPT_ESCROW_VAL}, ${networkO} L2Supply Balance: ${MOCK_VALUES_1.OPT_L2_VAL}`,
+      description: `L1Escrow Balance: ${MOCK_VALUES_1.OPTIMISM_L1_ESCROW_BAL}, ${networkO} L2Supply Balance: ${MOCK_VALUES_1.OPTIMISM_L2_BAL}`,
       alertId: `L1 ${networkO} supply issue`,
       severity: FindingSeverity.High,
       type: FindingType.Degraded,
       protocol: `${networkO}`,
       metadata: {
-        L1Bal: `${MOCK_VALUES_1.OPT_ESCROW_VAL}`,
-        L2Bal: `${MOCK_VALUES_1.OPT_L2_VAL}`,
+        L1Bal: `${MOCK_VALUES_1.OPTIMISM_L1_ESCROW_BAL}`,
+        L2Bal: `${MOCK_VALUES_1.OPTIMISM_L2_BAL}`,
       },
     });
 
@@ -204,7 +204,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
       "totalSupply",
       {
         inputs: [],
-        outputs: [MOCK_VALUES_1.ARB_L2_val],
+        outputs: [MOCK_VALUES_1.ARBITRUM_L2_BAL],
       },
     );
 
@@ -212,14 +212,14 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
 
     const expectedFindings = Finding.fromObject({
       name: `${networkA} layer 2 dai supply is more then the layer 1 escrow dai balance`,
-      description: `L1Escrow Balance: ${MOCK_VALUES_1.ARB_ESCROW_VAL}, ${networkA} L2Supply Balance: ${MOCK_VALUES_1.ARB_L2_val}`,
+      description: `L1Escrow Balance: ${MOCK_VALUES_1.ARBITRUM_L1_ESCROW_BAL}, ${networkA} L2Supply Balance: ${MOCK_VALUES_1.ARBITRUM_L2_BAL}`,
       alertId: `L1 ${networkA} supply issue`,
       severity: FindingSeverity.High,
       type: FindingType.Degraded,
       protocol: `${networkA}`,
       metadata: {
-        L1Bal: `${MOCK_VALUES_1.ARB_ESCROW_VAL}`,
-        L2Bal: `${MOCK_VALUES_1.ARB_L2_val}`,
+        L1Bal: `${MOCK_VALUES_1.ARBITRUM_L1_ESCROW_BAL}`,
+        L2Bal: `${MOCK_VALUES_1.ARBITRUM_L2_BAL}`,
       },
     });
 
