@@ -1,7 +1,7 @@
 # Compound III Proposal
 
 ## Summary
-- Compound III protocol bots to track interest rates and user investments and rewards.
+- Compound III FORTA bots to track interest rates and user investments and rewards.
 
 ## Proposed Bots:
 - **COMP01:** Investment tracker bot for USDC
