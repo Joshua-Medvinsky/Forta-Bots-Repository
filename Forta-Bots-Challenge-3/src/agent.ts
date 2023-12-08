@@ -3,25 +3,38 @@ import {
   HandleBlock,
   getEthersProvider,
   BlockEvent,
+  getAlerts,
 } from "forta-agent";
 import {
   DAI_ADDRESS,
   L1_ESCROW_ARBITRUM,
   L1_ESCROW_FUNCTION_SIGNATURE,
   L1_ESCROW_OPTIMISM,
+  BOT_ID,
 } from "./constants";
 import { ethers, Contract } from "ethers";
 import { getL1Finding, checkBlock } from "./utils";
+let initialized = false;
+let chainId: number;
+
+async function initialize(provider: ethers.providers.Provider): Promise<void> {
+  if (!initialized) {
+    const networkInfo = await provider.getNetwork();
+    chainId = networkInfo.chainId;
+    initialized = true;
+  }
+}
 
 export function provideHandleBlock(
   provider: ethers.providers.Provider,
-  alert: any,
+ 
 ): HandleBlock {
   return async function handleBlock(block: BlockEvent): Promise<Finding[]> {
     const findings: Finding[] = [];
     const { chainId } = await provider.getNetwork();
 
     try {
+      //await initialize(provider);
       if (chainId == 1) {
         const daiContract = new Contract(
           DAI_ADDRESS,
@@ -37,11 +50,18 @@ export function provideHandleBlock(
           ),
         );
       } else {
+        //Listen to alerts
+        const alerts = await getAlerts({
+          botIds: [BOT_ID],
+          alertId: "L1 escrow supply alert",
+          chainId: chainId,
+        });
+
         const blockFindings = await checkBlock(
           provider,
           block.blockNumber,
           chainId,
-          alert,
+          alerts,
         );
 
         if (blockFindings.length > 0) {
@@ -57,5 +77,5 @@ export function provideHandleBlock(
 }
 
 export default {
-  handleBlock: provideHandleBlock(getEthersProvider(), []),
+  handleBlock: provideHandleBlock(getEthersProvider()),
 };

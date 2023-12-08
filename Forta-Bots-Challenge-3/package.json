@@ -7,7 +7,8 @@
   "repository": "https://github.com/Joshua-Medvinsky/Forta-Bots-Challenges",
   "chainIds": [
     1,
-    137
+    10,
+    42161
   ],
   "scripts": {
     "build": "tsc",
