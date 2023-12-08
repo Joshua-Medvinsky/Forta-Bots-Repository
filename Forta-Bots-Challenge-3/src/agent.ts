@@ -14,27 +14,15 @@ import {
 } from "./constants";
 import { ethers, Contract } from "ethers";
 import { getL1Finding, checkBlock } from "./utils";
-let initialized = false;
-let chainId: number;
-
-async function initialize(provider: ethers.providers.Provider): Promise<void> {
-  if (!initialized) {
-    const networkInfo = await provider.getNetwork();
-    chainId = networkInfo.chainId;
-    initialized = true;
-  }
-}
 
 export function provideHandleBlock(
   provider: ethers.providers.Provider,
- 
 ): HandleBlock {
   return async function handleBlock(block: BlockEvent): Promise<Finding[]> {
     const findings: Finding[] = [];
     const { chainId } = await provider.getNetwork();
 
     try {
-      //await initialize(provider);
       if (chainId == 1) {
         const daiContract = new Contract(
           DAI_ADDRESS,

@@ -1,9 +1,6 @@
 import { ethers, Contract, BigNumber } from "ethers";
 import { Finding, FindingSeverity, FindingType } from "forta-agent";
-import {
-  L2_FUNCTION_SIGNATURE,
-  L2_TOKEN_ADDRESS_MAKER_DAO,
-} from "./constants";
+import { L2_FUNCTION_SIGNATURE, L2_TOKEN_ADDRESS_MAKER_DAO } from "./constants";
 
 export const getL1Finding = async (
   daiContract: Contract,
