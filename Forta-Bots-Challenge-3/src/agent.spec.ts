@@ -7,6 +7,7 @@ import {
   createBlockEvent,
   Alert,
   Block,
+  //getAlerts,
 } from "forta-agent";
 import {
   L1_ESCROW_ARBITRUM,
@@ -48,7 +49,7 @@ const MOCK_VALUES_2 = {
 const getAlertInput = (): AlertInput => {
   let alertInput: AlertInput = {
     addresses: [createAddress("0x1234")],
-    alertId: "L1 escrow supply alert",
+    alertId: "L1-BLOCK-CHECK-ESCROWS",
     description: "L1 escrow DAI supply is low",
     findingType: "Info",
     name: "L1_ESCROW_ALERT",
@@ -65,6 +66,8 @@ const getAlertInput = (): AlertInput => {
 };
 
 const alert = Alert.fromObject(getAlertInput());
+const alerts: Alert[] = [];
+alerts.push(alert);
 
 const L1_PROXY = new ethers.utils.Interface(L1_ESCROW_FUNCTION_SIGNATURE);
 const L2_PROXY = new ethers.utils.Interface(L2_FUNCTION_SIGNATURE);
@@ -80,7 +83,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   });
 
   it("eth network balance check", async () => {
-    handleBlock = provideHandleBlock(provider);
+    handleBlock = provideHandleBlock(provider, () => alerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
@@ -114,7 +117,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   });
 
   it("returns empty findings if the layer one escrow dai balance is greater than Optimism Layer 2 supply", async () => {
-    handleBlock = provideHandleBlock(provider);
+    handleBlock = provideHandleBlock(provider, () => alerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
@@ -136,7 +139,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   });
 
   it("returns empty findings if the layer one escrow dai balance is greater than Arbitrum Layer 2 supply", async () => {
-    handleBlock = provideHandleBlock(provider);
+    handleBlock = provideHandleBlock(provider, () => alerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
@@ -158,7 +161,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   });
 
   it("returns a finding if the optimism layer 2 dai supply is more then the layer 1 escrow dai balance", async () => {
-    handleBlock = provideHandleBlock(provider);
+    handleBlock = provideHandleBlock(provider, () => alerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
@@ -194,7 +197,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   });
 
   it("returns a finding if the arbitrum layer 2 dai supply is more then the layer 1 escrow dai balance", async () => {
-    handleBlock = provideHandleBlock(provider);
+    handleBlock = provideHandleBlock(provider, () => alerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });

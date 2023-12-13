@@ -1,6 +1,7 @@
 import { ethers, Contract, BigNumber } from "ethers";
 import { Finding, FindingSeverity, FindingType } from "forta-agent";
 import { L2_FUNCTION_SIGNATURE, L2_TOKEN_ADDRESS_MAKER_DAO } from "./constants";
+import { AlertInput } from "forta-agent-tools/lib/utils";
 
 export const getL1Finding = async (
   daiContract: Contract,
@@ -47,15 +48,17 @@ export const checkBlock = async (
     provider,
   );
   const l2Balance = await l2Contract.totalSupply({ blockTag: blockNumber });
+
   if (alert.length == 0) {
     return [];
   }
+
   //assigns balance and network based off of chainID
   const l2Network = chainId === 42161 ? "Arbitrum" : "Optimism";
   const l1Balance =
     chainId === 42161
-      ? alert.metadata.escrowBalanceArbitrum
-      : alert.metadata.escrowBalanceOptimism;
+      ? alert[0].metadata.escrowBalanceArbitrum
+      : alert[0].metadata.escrowBalanceOptimism;
 
   if (l2Balance.gt(l1Balance)) {
     return [
