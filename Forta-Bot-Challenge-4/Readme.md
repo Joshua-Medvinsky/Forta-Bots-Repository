@@ -33,3 +33,4 @@
     - `utilization`: The utilization at which to calculate the rate.
     - **RETURNS:** The per-second supply rate as the decimal representation of a percentage scaled up by 10 ^ 18. E.g., 317100000 indicates, roughly, a 1% APR.
   - Monitors the supply rate and suggests when it's an optimal time to invest or withdraw to a user by monitoring the rate over time and emitting an alert when it goes past a certain threshold (e.g., 5%).
+   - Proxy contract address: `0xc3d688B66703497DAA19211EEdff47f25384cdc3`.
