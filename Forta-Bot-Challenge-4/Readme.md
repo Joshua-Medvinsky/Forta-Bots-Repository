@@ -5,7 +5,7 @@
 
 ## Proposed Bots:
 - **COMP01:** Investment tracker bot for USDC
-  - Monitors when an address stakes a given amount in tokens over a specified time, emitting an alert when it exceeds a predetermined threshold.
+  - Monitors when an individual address stakes a given amount in tokens, emitting an alert when it exceeds a predetermined threshold.
   - Purpose: To track any suspicious investment activity by a user.
 - **COMP02:** Rewards tracker bot
   - Informs the user of their rewards.
@@ -22,11 +22,13 @@
   - Proxy contract address: `0xc3d688B66703497DAA19211EEdff47f25384cdc3`.
   - Issues an alert when the total transaction amount from supply events exceeds a specified threshold within a day for a given address. (Will utilize a cache to monitor activity over a day)
 - **COMP02:** Rewards tracker bot
-  -  function `getRewardOwed(address comet, address account) external returns;`
+  -  function `baseTrackingAccrued(address account) external view returns (uint64);`
+
+  //to-do fix below
      -  Calculates the amount of a reward token owed to an account
      - `comet` The protocol instance
      - `account` The account to check rewards for
-  - Function is located on rewards contract: `0x1B0e765F6224C21223AeA2af16c1C46E38885a40`.
+  - Function is located on rewards contract: `0x285617313887d43256F852cAE0Ee4de4b68D45B0`.
     
 - **COMP03:** Monitor supply rate bot
   - Utilizes function: `getSupplyRate(uint utilization) public view returns (uint64);`

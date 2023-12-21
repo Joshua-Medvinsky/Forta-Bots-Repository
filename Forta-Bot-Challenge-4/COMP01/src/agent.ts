@@ -15,7 +15,7 @@ export function provideHandleTransaction(userAddress: String): HandleTransaction
     for (const tx of swapTxs) {
       try {
         const [from, dst, amount] = tx.args;
-        const poolAddress = tx.address;
+        const poolAddress = tx.address; //to-do remove pool address
         // Call isOverThreshold with the timestamp
         const result = await isOverThreshold(poolAddress, amount, timestamp);
 
