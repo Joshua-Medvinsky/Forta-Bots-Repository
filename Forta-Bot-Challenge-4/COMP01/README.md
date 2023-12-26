@@ -1,4 +1,4 @@
-# Forta Bots Challenges
+# Investment tracker bot for USDC
 
 ## Description
 
