@@ -15,9 +15,11 @@ export function provideHandleTransaction(userAddress: String): HandleTransaction
     for (const tx of swapTxs) {
       try {
         const [from, dst, amount] = tx.args;
-        const poolAddress = tx.address; //to-do remove pool address
+
+        const fromAddress = from;
+
         // Call isOverThreshold with the timestamp
-        const result = await isOverThreshold(poolAddress, amount, timestamp);
+        const result = await isOverThreshold(fromAddress, amount, timestamp);
 
         if (result == 0) {
           return findings;
@@ -31,7 +33,7 @@ export function provideHandleTransaction(userAddress: String): HandleTransaction
             type: FindingType.Info,
             protocol: "CompoundV3",
             metadata: {
-              poolAddress: poolAddress.toLowerCase(),
+              poolAddress: dst.toLowerCase(),
               amountOverThreshold: result.toString(),
               userAddress: userAddress.toLowerCase(),
             },
