@@ -23,8 +23,6 @@ export function provideHandleBlock(
     const findings: Finding[] = [];
 
     try {
-
-
       const supplyRateInfo = await getSupplyRate(provider, supplyRateABI, blockNumber, utilization);
       const supplyNotification: string = await checkSupplyRate(supplyRateInfo);
       let supplyString = "";

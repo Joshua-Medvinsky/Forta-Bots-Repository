@@ -14,7 +14,7 @@ Utilizes the function below:
 
 ## Purpose
 
-  Monitor the supply rate and suggest to the user when it's an optimal time to invest or withdrawby monitoring the rate over time and emitting an alert when it goes past a certain threshold (e.g., 5%).
+  Monitor the supply rate and suggest to the user when it's an optimal time to invest or withdraw by monitoring the rate over time and emitting an alert when it goes past a certain threshold (e.g., 5%).
 
 ## Supported Chains
 
@@ -33,4 +33,6 @@ Utilizes the function below:
     -supplyNotification: String which indicates if it's over or under 5%,
 ## Test Data
 
-The agent behaviour can be verified on Ethereum,
+The agent behaviour can be verified on Ethereum
+
+Test class monitors supply rate every 1000 blocks.

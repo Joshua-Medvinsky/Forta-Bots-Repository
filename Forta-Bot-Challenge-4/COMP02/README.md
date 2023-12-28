@@ -12,7 +12,7 @@ Utilizes the function below:
 
 ## Purpose
 
-The objective is to regularly update and notify users about their rewards every 24 hours, ensuring they stay informed.
+The objective is to regularly update and notify users about their rewards every 1000 blocks, ensuring they stay informed.
 
 ## Supported Chains
 

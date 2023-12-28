@@ -17,7 +17,8 @@ describe("Compound 3 bot tests", () => {
   const networkChainID = 1;
 
   const rewardAmount = ethers.BigNumber.from("5");
-
+  const secondRewardAmount = ethers.BigNumber.from("8");
+  const thirdRewardAmount = ethers.BigNumber.from("10");
   let findings = [];
 
   let provider: any;
@@ -99,6 +100,92 @@ describe("Compound 3 bot tests", () => {
         protocol: "CompoundV3",
         metadata: {
           rewardAmount: rewardAmount.toString(),
+        },
+      }),
+    ]);
+  });
+  it("check every 1000 blocks", async () => {
+    handleBlock = provideHandleBlock(provider, REWARDS_ABI, startingBlockNumber, userDummyAddress, cometAddress);
+    const blockEvent = createBlockEvent({
+      block: { hash: createAddress("0x123"), number: startingBlockNumber } as Block,
+    });
+    mockProvider.setNetwork(networkChainID);
+
+    mockProvider.addCallTo(cometAddress, startingBlockNumber, proxyInterface, "baseTrackingAccrued", {
+      inputs: [userDummyAddress],
+      outputs: [rewardAmount],
+    });
+
+    findings = await handleBlock(blockEvent);
+
+    expect(findings).toStrictEqual([
+      Finding.fromObject({
+        name: "Compound III rewards notifier",
+        description: "User has " + rewardAmount + " in rewards for token: USDC",
+        alertId: "COMPOUND-REWARDS-123",
+        severity: FindingSeverity.Info,
+        type: FindingType.Info,
+        protocol: "CompoundV3",
+        metadata: {
+          rewardAmount: rewardAmount.toString(),
+        },
+      }),
+    ]);
+    //first 1000 blocks
+    const secondBlockNumber = 1000;
+    handleBlock = provideHandleBlock(provider, REWARDS_ABI, secondBlockNumber, userDummyAddress, cometAddress);
+
+    const secondBlockEvent = createBlockEvent({
+      block: { hash: createAddress("0x123"), number: secondBlockNumber } as Block,
+    });
+    mockProvider.setNetwork(networkChainID);
+
+    mockProvider.addCallTo(cometAddress, secondBlockNumber, proxyInterface, "baseTrackingAccrued", {
+      inputs: [userDummyAddress],
+      outputs: [secondRewardAmount],
+    });
+
+    findings = await handleBlock(secondBlockEvent);
+
+    expect(findings).toStrictEqual([
+      Finding.fromObject({
+        name: "Compound III rewards notifier",
+        description: "User has " + secondRewardAmount + " in rewards for token: USDC",
+        alertId: "COMPOUND-REWARDS-123",
+        severity: FindingSeverity.Info,
+        type: FindingType.Info,
+        protocol: "CompoundV3",
+        metadata: {
+          rewardAmount: secondRewardAmount.toString(),
+        },
+      }),
+    ]);
+
+    //check at 2000 blocks
+    const thirdBlockNumber = 1000;
+    handleBlock = provideHandleBlock(provider, REWARDS_ABI, thirdBlockNumber, userDummyAddress, cometAddress);
+    const thirdBlockEvent = createBlockEvent({
+      block: { hash: createAddress("0x123"), number: thirdBlockNumber } as Block,
+    });
+    mockProvider.setNetwork(networkChainID);
+
+    mockProvider.addCallTo(cometAddress, thirdBlockNumber, proxyInterface, "baseTrackingAccrued", {
+      inputs: [userDummyAddress],
+      outputs: [thirdRewardAmount],
+    });
+
+    findings = await handleBlock(thirdBlockEvent);
+
+    expect(findings).toStrictEqual([
+      Finding.fromObject({
+        name: "Compound III rewards notifier",
+        description: "User has " + thirdRewardAmount + " in rewards for token: USDC",
+        alertId: "COMPOUND-REWARDS-123",
+        severity: FindingSeverity.Info,
+        type: FindingType.Info,
+        protocol: "CompoundV3",
+        metadata: {
+          rewardAmount: thirdRewardAmount.toString(),
         },
       }),
     ]);

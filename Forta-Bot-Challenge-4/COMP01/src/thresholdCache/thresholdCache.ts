@@ -96,6 +96,7 @@ export const clearCachePeriodically = () => {
 };
 
 // Function to clear the cache once (for testing purposes)
+// Utilizes setTimeout instead of setInterval in the test to avoid memory leak
 export const clearCachePeriodicallyMock = () => {
   setTimeout(() => {
     amountCache.clear();
