@@ -35,4 +35,4 @@ Utilizes the function below:
 
 The agent behaviour can be verified on Ethereum
 
-Test class monitors supply rate every 1000 blocks.
+Test class monitors supply rate every 100 blocks.
