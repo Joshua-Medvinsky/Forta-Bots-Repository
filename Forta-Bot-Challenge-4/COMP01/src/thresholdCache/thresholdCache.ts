@@ -3,14 +3,13 @@ import { ethers } from "ethers";
 
 import { BigNumber } from "@ethersproject/bignumber";
 
-// constants.ts
 export let THRESHOLD: any = ethers.BigNumber.from("10");
 
 export const amountCache: LRUCache<string, { timestamp: number; amount: any }> = new LRUCache({
   max: 1000,
 });
 
-export const isOverThreshold = async (userAddress: string, amount: any, timestamp: number): Promise<number> => {
+export const amountOverThreshold = async (userAddress: string, amount: any, timestamp: number): Promise<number> => {
   const bigAmount = BigNumber.from(amount);
   const bigThreshold = BigNumber.from(THRESHOLD);
 
@@ -94,4 +93,15 @@ export const clearCachePeriodically = () => {
     },
     24 * 60 * 60 * 1000
   ); // 24 hours in milliseconds
+};
+
+// Function to clear the cache once (for testing purposes)
+export const clearCachePeriodicallyMock = () => {
+  setTimeout(() => {
+    amountCache.clear();
+  }, 1000); // Wait for 1 second and then clear the cache
+};
+
+export const setThreshold = (newThreshold: any): void => {
+  THRESHOLD = newThreshold;
 };

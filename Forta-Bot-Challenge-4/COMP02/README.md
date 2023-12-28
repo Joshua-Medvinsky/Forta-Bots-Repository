@@ -2,13 +2,17 @@
 
 ## Description
 
-This bot notifies the user of the current amount of tokens they have in Rewards contract [`0x1B0e765F6224C21223AeA2af16c1C46E38885a40`](https://etherscan.io/address/0x1B0e765F6224C21223AeA2af16c1C46E38885a40)
+This bot notifies the user of the current amount of tokens they have in USDC Rewards contract [`0x0x285617313887d43256F852cAE0Ee4de4b68D45B0`](https://etherscan.io/address/0x285617313887d43256F852cAE0Ee4de4b68D45B0)
 
 Utilizes the function below:
   -  function `baseTrackingAccrued(address account) external view returns (uint64);`
      -  Calculates the amount of a USDC token owed to an account
      - `account` The account to check rewards for
   - Function is located on rewards contract: `0x285617313887d43256F852cAE0Ee4de4b68D45B0`(https://etherscan.io/address/0x285617313887d43256F852cAE0Ee4de4b68D45B0).
+
+## Purpose
+
+The objective is to regularly update and notify users about their rewards every 24 hours, ensuring they stay informed.
 
 ## Supported Chains
 

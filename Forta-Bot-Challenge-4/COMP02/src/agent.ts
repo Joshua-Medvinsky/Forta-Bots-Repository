@@ -1,59 +1,58 @@
 import {
   Finding,
-  HandleTransaction,
-  TransactionEvent,
+  HandleBlock,
+  Initialize,
   FindingSeverity,
   FindingType,
   getEthersProvider,
+  BlockEvent,
 } from "forta-agent";
 import { ethers } from "forta-agent";
-import { REWARDS_ABI, REWARDS_CONTRACT_ADDRESS, RewardOwed } from "./constants";
-
+import { REWARDS_ABI, REWARDS_CONTRACT_ADDRESS } from "./constants";
 import { getRewardOwed } from "./utils";
 
-export function provideHandleTransaction(
+export function provideHandleBlock(
   provider: ethers.providers.Provider,
   rewardsABI: string,
-  blockNumber: number
-): HandleTransaction {
-  return async function handleTransaction(txEvent: TransactionEvent) {
-    const findings: Finding[] = [];
+  blockNumber: number,
+  accountAddress: string,
+  cometAddress: string
+): HandleBlock {
+  let chainId: number;
 
-    if (txEvent.to != REWARDS_CONTRACT_ADDRESS.toLowerCase()) {
+  const initialize: Initialize = async () => {
+    const networkInfo = await provider.getNetwork();
+    chainId = networkInfo.chainId;
+  };
+  return async function handleBlock(block: BlockEvent): Promise<Finding[]> {
+    const findings: Finding[] = [];
+    await initialize();
+
+    try {
+      if (cometAddress != REWARDS_CONTRACT_ADDRESS) return findings;
+
+      const rewardInfo = await getRewardOwed(accountAddress, provider, rewardsABI, blockNumber);
+
+      findings.push(
+        Finding.fromObject({
+          name: "Compound III rewards notifier",
+          description: "User has " + rewardInfo + " in rewards for token: USDC",
+          alertId: "COMPOUND-REWARDS-123",
+          severity: FindingSeverity.Info,
+          type: FindingType.Info,
+          protocol: "CompoundV3",
+          metadata: {
+            rewardAmount: rewardInfo,
+          },
+        })
+      );
+    } catch (e) {
       return findings;
     }
-    const swapTxs = txEvent.filterFunction(rewardsABI);
-
-    // Iterate through transactions
-    for (const tx of swapTxs) {
-      try {
-        const [comet, account] = tx.args;
-
-        const rewardInfo: RewardOwed = await getRewardOwed(account, comet, provider, rewardsABI, blockNumber);
-
-        findings.push(
-          Finding.fromObject({
-            name: "Compound III rewards notifier",
-            description: "User has " + rewardInfo.owed + " in rewards for token: " + rewardInfo.address,
-            alertId: "COMPOUND-REWARDS-123",
-            severity: FindingSeverity.Info,
-            type: FindingType.Info,
-            protocol: "CompoundV3",
-            metadata: {
-              rewardToken: rewardInfo.address,
-              rewardAmount: rewardInfo.owed,
-            },
-          })
-        );
-      } catch (e) {
-        return findings;
-      }
-    }
-
     return findings;
   };
 }
 
 export default {
-  handleTransaction: provideHandleTransaction(getEthersProvider(), REWARDS_ABI, 0),
+  handleTransaction: provideHandleBlock(getEthersProvider(), REWARDS_ABI, 0, "", REWARDS_CONTRACT_ADDRESS),
 };

@@ -6,7 +6,7 @@ import { ethers } from "ethers";
 import { provideHandleTransaction } from "./agent";
 import { Provider } from "@ethersproject/abstract-provider";
 import { SUPPLY_POOL_ADDRESS, SUPPLY_EVENT_SIGNATURE, WRONG_SUPPLY_EVENT_SIGNATURE } from "./constants";
-import { clearCache, calculateNewThreshold, THRESHOLD } from "./utils";
+import { clearCache, calculateNewThreshold, THRESHOLD } from "./thresholdCache/thresholdCache";
 
 describe("Compound 3 bot tests", () => {
   const timestamp = Date.now();
