@@ -25,7 +25,7 @@
   -  function `baseTrackingAccrued(address account) external view returns (uint64);`
      -  Calculates the amount of a USDC token owed to an account
      - `account` The account to check rewards for
-  - Function is located on rewards contract: `0x285617313887d43256F852cAE0Ee4de4b68D45B0`(https://etherscan.io/address/0x285617313887d43256F852cAE0Ee4de4b68D45B0).
+  - Function is located on rewards contract: [`0x285617313887d43256F852cAE0Ee4de4b68D45B0`](https://etherscan.io/address/0x285617313887d43256F852cAE0Ee4de4b68D45B0).
 - **COMP03:** Monitor supply rate bot
   - Utilizes function: `getSupplyRate(uint utilization) public view returns (uint64);`
     - `utilization`: The utilization at which to calculate the rate.
