@@ -116,7 +116,6 @@ describe("Compound 3 bot tests", () => {
   });
   it("returns findings for a transaction goes over the newly calculated threshold", async () => {
     amountOverThreshold = mockAmountThree.sub(THRESHOLD);
-    1;
 
     mockTxEvent.setBlock(0);
     mockTxEvent.addEventLog(SUPPLY_EVENT_SIGNATURE, SUPPLY_POOL_ADDRESS, mockEventThree);
