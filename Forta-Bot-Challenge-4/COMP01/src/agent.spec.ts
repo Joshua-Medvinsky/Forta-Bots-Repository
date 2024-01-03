@@ -1,12 +1,11 @@
 import { Finding, FindingSeverity, FindingType, HandleTransaction } from "forta-agent";
 //import { POOL_INIT_CODE_HASH, UNISWAP_POOL_FUNCTION_SIGNATURE, SWAP_FUNCTION_SIGNATURE } from "./constants";
-import { TestTransactionEvent, MockEthersProvider } from "forta-agent-tools/lib/test";
+import { TestTransactionEvent } from "forta-agent-tools/lib/test";
 import { createAddress } from "forta-agent-tools";
 import { ethers } from "ethers";
 import { provideHandleTransaction } from "./agent";
-import { Provider } from "@ethersproject/abstract-provider";
 import { SUPPLY_POOL_ADDRESS, SUPPLY_EVENT_SIGNATURE, WRONG_SUPPLY_EVENT_SIGNATURE } from "./constants";
-import { clearCache, calculateNewThreshold, THRESHOLD } from "./thresholdCache/thresholdCache";
+import { clearCache, setThreshold, THRESHOLD, clearSupplyTracker } from "./thresholdCache/thresholdCache";
 
 describe("Compound 3 bot tests", () => {
   const timestamp = Date.now();
@@ -14,8 +13,6 @@ describe("Compound 3 bot tests", () => {
 
   const userDummyAddress = createAddress("0xabc");
   const wrongPoolAddress = createAddress("0x123");
-
-  let mockProvider = new MockEthersProvider();
 
   const mockAmountOne = ethers.BigNumber.from("45");
   const mockAmountTwo = ethers.BigNumber.from("5");
@@ -27,12 +24,13 @@ describe("Compound 3 bot tests", () => {
   let mockTxEvent = new TestTransactionEvent();
   let amountOverThreshold;
   beforeAll(() => {
-    const provider = mockProvider as unknown as Provider;
-    handleTransaction = provideHandleTransaction(userDummyAddress);
+    handleTransaction = provideHandleTransaction();
     mockTxEvent = new TestTransactionEvent();
   });
   beforeEach(() => {
     clearCache();
+    clearSupplyTracker();
+    setThreshold(10);
     mockTxEvent = new TestTransactionEvent();
   });
 
@@ -64,17 +62,18 @@ describe("Compound 3 bot tests", () => {
     expect(findings).toStrictEqual([]);
   });
   it("returns findings when a transaction goes over the given threshold", async () => {
+    amountOverThreshold = mockAmountOne.sub(THRESHOLD);
+
     mockTxEvent.setBlock(0);
     mockTxEvent.addEventLog(SUPPLY_EVENT_SIGNATURE, SUPPLY_POOL_ADDRESS, mockEvent);
     mockTxEvent.setTimestamp(timestamp);
     findings = await handleTransaction(mockTxEvent);
-    amountOverThreshold = mockAmountOne.sub(THRESHOLD);
 
     expect(findings).toStrictEqual([
       Finding.fromObject({
         name: "Compound III threshold detector",
         description: "Detected user put " + amountOverThreshold + " over supply threshold",
-        alertId: "COMPOUND-THRESH-123",
+        alertId: "COMP-01",
         severity: FindingSeverity.Low,
         type: FindingType.Info,
         protocol: "CompoundV3",
@@ -96,41 +95,39 @@ describe("Compound 3 bot tests", () => {
     mockTxEventTwo.setTimestamp(timestamp - 40);
     findings = await handleTransaction(mockTxEventTwo);
     expect(findings).toStrictEqual([]);
+    const totalAmountOver = mockAmountOne.add(mockAmountTwo).sub(THRESHOLD);
     findings = await handleTransaction(mockTxEvent);
-
-    amountOverThreshold = mockAmountOne.add(mockAmountTwo).sub(THRESHOLD);
-
-    //call calculate new threshold for the next set of tests
-    calculateNewThreshold();
 
     expect(findings).toStrictEqual([
       Finding.fromObject({
         name: "Compound III threshold detector",
-        description: "Detected user put " + amountOverThreshold + " over supply threshold",
-        alertId: "COMPOUND-THRESH-123",
+        description: "Detected user put " + totalAmountOver + " over supply threshold",
+        alertId: "COMP-01",
         severity: FindingSeverity.Low,
         type: FindingType.Info,
         protocol: "CompoundV3",
         metadata: {
           userAddress: userDummyAddress.toLowerCase(),
           poolAddress: SUPPLY_POOL_ADDRESS.toLowerCase(),
-          amountOverThreshold: amountOverThreshold.toString(),
+          amountOverThreshold: totalAmountOver.toString(),
         },
       }),
     ]);
   });
   it("returns findings for a transaction goes over the newly calculated threshold", async () => {
+    amountOverThreshold = mockAmountThree.sub(THRESHOLD);
+    1;
+
     mockTxEvent.setBlock(0);
     mockTxEvent.addEventLog(SUPPLY_EVENT_SIGNATURE, SUPPLY_POOL_ADDRESS, mockEventThree);
     mockTxEvent.setTimestamp(timestamp);
     findings = await handleTransaction(mockTxEvent);
-    amountOverThreshold = mockAmountThree.sub(THRESHOLD);
 
     expect(findings).toStrictEqual([
       Finding.fromObject({
         name: "Compound III threshold detector",
         description: "Detected user put " + amountOverThreshold + " over supply threshold",
-        alertId: "COMPOUND-THRESH-123",
+        alertId: "COMP-01",
         severity: FindingSeverity.Low,
         type: FindingType.Info,
         protocol: "CompoundV3",

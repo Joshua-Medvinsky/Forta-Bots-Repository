@@ -37,7 +37,7 @@ export function provideHandleBlock(
         Finding.fromObject({
           name: "Compound III rewards notifier",
           description: "User has " + rewardInfo + " in rewards for token: USDC",
-          alertId: "COMPOUND-REWARDS-123",
+          alertId: "COMP-02",
           severity: FindingSeverity.Info,
           type: FindingType.Info,
           protocol: "CompoundV3",

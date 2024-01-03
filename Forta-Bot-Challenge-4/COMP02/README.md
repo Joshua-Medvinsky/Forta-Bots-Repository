@@ -21,7 +21,7 @@ The objective is to regularly update and notify users about their rewards every 
 
 ## Alerts
 
-- COMPOUND-REWARDS-123
+- COMP-02
   - Fires a notification to notify the user the amount of USDC tokens they have in rewards contract
   - Severity is always set to "info" 
   - Type is always set to "info" 

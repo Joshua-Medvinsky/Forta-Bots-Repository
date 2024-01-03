@@ -3,41 +3,72 @@ import { ethers } from "ethers";
 
 import { BigNumber } from "@ethersproject/bignumber";
 
-export let THRESHOLD: any = ethers.BigNumber.from("10");
+export let THRESHOLD: BigNumber = ethers.BigNumber.from("10");
 
-export const amountCache: LRUCache<string, { timestamp: number; amount: any }> = new LRUCache({
+export let totalSupplySum: BigNumber = ethers.BigNumber.from("0");
+export let supplyCounter: number = 0;
+
+export const amountCache: LRUCache<string, { timestamp: number; amount: BigNumber }> = new LRUCache({
   max: 1000,
 });
 
-export const amountOverThreshold = async (userAddress: string, amount: any, timestamp: number): Promise<number> => {
+export const amountOverThreshold = async (
+  userAddress: string,
+  amount: BigNumber,
+  timestamp: number
+): Promise<number> => {
   const bigAmount = BigNumber.from(amount);
-  const bigThreshold = BigNumber.from(THRESHOLD);
-
+  const oldThreshold = THRESHOLD;
   // Check if there is an entry in the cache for the current userAddress
   if (amountCache.has(userAddress)) {
-    const cachedData = amountCache.get(userAddress) || { timestamp: 0, amount: "0" };
-    const totalAmountWithinDay = BigNumber.from(cachedData.amount).add(bigAmount);
+    const cachedData = amountCache.get(userAddress) || { timestamp: 0, amount: BigNumber.from("0") };
 
-    // Update the cache with the provided timestamp and accumulated amount
-    amountCache.set(userAddress, {
-      timestamp: timestamp,
-      amount: totalAmountWithinDay.toString(),
-    });
+    // Check if the new timestamp is within the 24-hour window
+    if (timestamp - cachedData.timestamp <= 24 * 60 * 60) {
+      const totalAmountWithinDay = BigNumber.from(cachedData.amount).add(bigAmount);
 
-    // Check if the total amount within the last day is over the threshold
-    if (totalAmountWithinDay.gt(bigThreshold)) {
-      return totalAmountWithinDay.sub(bigThreshold).toNumber();
+      // Update the cache with the provided timestamp and accumulated amount
+      amountCache.set(userAddress, {
+        timestamp: timestamp,
+        amount: totalAmountWithinDay,
+      });
+
+      // Update the counters
+      totalSupplySum = totalSupplySum.add(bigAmount);
+      supplyCounter++;
+
+      // Calculate the new threshold as 20% above the average
+      const average = totalSupplySum.div(supplyCounter);
+      THRESHOLD = average.add(average.mul(20).div(100));
+
+      // Check if the total amount within the last day is over the  old threshold
+      if (totalAmountWithinDay.gt(oldThreshold)) {
+        // Clear the amount to prevent multiple alerts within 24 hours
+        amountCache.set(userAddress, { timestamp: timestamp, amount: BigNumber.from("0") });
+        return totalAmountWithinDay.sub(oldThreshold).toNumber();
+      }
     }
   } else {
     // If there is no entry in the cache, update the cache with the provided timestamp and amount
     amountCache.set(userAddress, {
       timestamp: timestamp,
-      amount: bigAmount.toString(),
+      amount: bigAmount,
     });
 
-    // Check if the current amount is greater than the threshold
-    if (bigAmount.gt(bigThreshold)) {
-      return bigAmount.sub(bigThreshold).toNumber();
+    // Update the counters
+    totalSupplySum = totalSupplySum.add(bigAmount);
+    supplyCounter++;
+
+    // Calculate the new threshold as 20% above the average
+    const average = totalSupplySum.div(supplyCounter);
+    THRESHOLD = average.add(average.mul(20).div(100));
+
+    // Check if the current amount is greater than the old threshold
+    if (bigAmount.gt(oldThreshold)) {
+      // Clear the amount to prevent multiple alerts within 24 hours
+      amountCache.set(userAddress, { timestamp: timestamp, amount: BigNumber.from("0") });
+
+      return bigAmount.sub(oldThreshold).toNumber();
     }
   }
 
@@ -45,62 +76,36 @@ export const amountOverThreshold = async (userAddress: string, amount: any, time
   return 0;
 };
 
-// Function to update the threshold as 20% above the average of the amounts stored in the cache
-export const calculateNewThreshold = (): void => {
-  let totalAmount = BigNumber.from("0");
-  let count = 0;
-
-  // Get the generator object
-  const cacheValuesGenerator = amountCache.values();
-
-  // Convert the generator into an array using Array.from
-  const cacheValues = Array.from(cacheValuesGenerator).filter((value) => value !== undefined) as {
-    timestamp: number;
-    amount: any;
-  }[];
-
-  // Iterate over the array
-  for (let i = 0; i < cacheValues.length; i++) {
-    const data = cacheValues[i];
-    totalAmount = totalAmount.add(BigNumber.from(data.amount));
-    count++;
-  }
-
-  if (count === 0) {
-    // Do not update the threshold if there are no entries in the cache
-    return;
-  }
-
-  // Calculate the average
-  const average = totalAmount.div(count);
-
-  // Calculate the new threshold as 20% above the average
-  const newThreshold = average.add(average.mul(20).div(100));
-
-  // Update the global threshold
-  THRESHOLD = newThreshold;
-};
-
 // Function to clear the cache
 export const clearCache = () => {
   amountCache.clear();
+  //clear counters too
 };
-// Function to clear the cache every 24 hours
+
+//Function to reset sum and counter
+export const clearSupplyTracker = () => {
+  totalSupplySum = ethers.BigNumber.from("0");
+  supplyCounter = 0;
+};
+
+// Function to clear the cache every 24 hours for each user
 export const clearCachePeriodically = () => {
   setInterval(
     () => {
-      amountCache.clear();
-    },
-    24 * 60 * 60 * 1000
-  ); // 24 hours in milliseconds
-};
+      // Get the current timestamp
+      const currentTime = Date.now();
 
-// Function to clear the cache once (for testing purposes)
-// Utilizes setTimeout instead of setInterval in the test to avoid memory leak
-export const clearCachePeriodicallyMock = () => {
-  setTimeout(() => {
-    amountCache.clear();
-  }, 1000); // Wait for 1 second and then clear the cache
+      // Iterate over the cache entries
+      amountCache.forEach((data, userAddress) => {
+        // Check if the user's first transaction timestamp is within the last 24 hours
+        if (data.timestamp >= currentTime - 24 * 60 * 60 * 1000) {
+          // If within the 24-hour window, clear the cache entry for that user
+          amountCache.delete(userAddress);
+        }
+      });
+    },
+    60 * 60 * 1000
+  ); // Run every 1 hour to check and clear the cache
 };
 
 export const setThreshold = (newThreshold: any): void => {

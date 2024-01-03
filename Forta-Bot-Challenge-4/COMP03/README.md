@@ -24,7 +24,7 @@ Utilizes the function below:
 
 ## Alerts
 
-- COMPOUND-SUPPLY-RATE-123
+- COMP-03
   - Fires a notification when supply rate goes under 1% APR or over 5% APR
   - Severity is always set to "info" 
   - Type is always set to "info" 

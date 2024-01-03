@@ -94,7 +94,7 @@ describe("Compound 3 bot tests", () => {
       Finding.fromObject({
         name: "Compound III rewards notifier",
         description: "User has " + rewardAmount + " in rewards for token: USDC",
-        alertId: "COMPOUND-REWARDS-123",
+        alertId: "COMP-02",
         severity: FindingSeverity.Info,
         type: FindingType.Info,
         protocol: "CompoundV3",
@@ -122,7 +122,7 @@ describe("Compound 3 bot tests", () => {
       Finding.fromObject({
         name: "Compound III rewards notifier",
         description: "User has " + rewardAmount + " in rewards for token: USDC",
-        alertId: "COMPOUND-REWARDS-123",
+        alertId: "COMP-02",
         severity: FindingSeverity.Info,
         type: FindingType.Info,
         protocol: "CompoundV3",
@@ -151,7 +151,7 @@ describe("Compound 3 bot tests", () => {
       Finding.fromObject({
         name: "Compound III rewards notifier",
         description: "User has " + secondRewardAmount + " in rewards for token: USDC",
-        alertId: "COMPOUND-REWARDS-123",
+        alertId: "COMP-02",
         severity: FindingSeverity.Info,
         type: FindingType.Info,
         protocol: "CompoundV3",
@@ -180,7 +180,7 @@ describe("Compound 3 bot tests", () => {
       Finding.fromObject({
         name: "Compound III rewards notifier",
         description: "User has " + thirdRewardAmount + " in rewards for token: USDC",
-        alertId: "COMPOUND-REWARDS-123",
+        alertId: "COMP-02",
         severity: FindingSeverity.Info,
         type: FindingType.Info,
         protocol: "CompoundV3",

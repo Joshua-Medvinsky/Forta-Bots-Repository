@@ -1,10 +1,8 @@
 import { ethers } from "ethers";
 import {
   clearCache,
-  clearCachePeriodicallyMock,
   amountOverThreshold,
-  calculateNewThreshold,
-  amountCache,
+  clearSupplyTracker,
   setThreshold,
   THRESHOLD,
 } from "./thresholdCache";
@@ -14,6 +12,7 @@ describe("Threshold Cache Functions", () => {
     // Set the initial threshold
     setThreshold(10);
     clearCache();
+    clearSupplyTracker();
   });
 
   afterAll(() => {
@@ -21,52 +20,43 @@ describe("Threshold Cache Functions", () => {
     clearCache();
   });
 
-  it("should update the threshold", () => {
+  it("should update the threshold when multiple users contribute", async () => {
     // Initial threshold value
     expect(THRESHOLD.toString()).toEqual("10");
 
-    // Add data to the cache
-    amountCache.set("user123", { timestamp: 1, amount: ethers.BigNumber.from("12") });
+    // Add data to the cache for two different users
+    await amountOverThreshold("user123", ethers.BigNumber.from("3"), 2);
+    await amountOverThreshold("user456", ethers.BigNumber.from("5"), 3);
 
-    // Calculate and update the threshold
-    calculateNewThreshold();
+    // Wait for the asynchronous updates to complete
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // New threshold value
     expect(THRESHOLD.toString()).not.toEqual("10");
   });
 
-  it("should clear the cache periodically", async () => {
-    // Add data to the cache with a timestamp outside the past day (e.g., two days ago)
-    const twoDaysAgo = Math.floor(Date.now() / 1000) - 2 * 24 * 60 * 60;
-    amountCache.set("user456", { timestamp: twoDaysAgo, amount: ethers.BigNumber.from("15") });
+  it("should handle case where amount is exactly equal to the threshold", async () => {
+    // Initial threshold value
+    expect(THRESHOLD.toString()).toEqual("10");
 
-    // Set an interval to clear the cache
-    clearCachePeriodicallyMock();
+    // Add data to the cache
+    const result = await amountOverThreshold("user789", ethers.BigNumber.from("10"), 2);
 
-    // Wait for a short time less than the default Jest timeout (e.g., 2000 ms)
-    await new Promise((resolve) => setTimeout(resolve, 4900));
+    // Wait for the asynchronous updates to complete
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Check if the cache is cleared
-    expect(amountCache.size).toEqual(0);
+    // Check if the result is correct (should be 0 since the amount is equal to the threshold)
+    expect(result).toEqual(0);
   });
 
   it("should return correct amount over threshold", async () => {
-    // Add data to the cache
-    amountCache.set("user789", { timestamp: 1, amount: ethers.BigNumber.from("8") });
-
     // Call the function to check the amount over the threshold
-    const result = await amountOverThreshold("user789", ethers.BigNumber.from("3"), 2);
+    const result = await amountOverThreshold("user89", ethers.BigNumber.from("13"), 2);
+
+    // Wait for the asynchronous updates to complete
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Check if the result is correct
-    expect(result).toEqual(1);
-  });
-
-  it("should handle case where cache is empty", () => {
-    // Call the function to update the threshold with an empty cache
-
-    calculateNewThreshold();
-
-    // The threshold should remain the same
-    expect(THRESHOLD.toString()).toEqual("10");
+    expect(result).toEqual(3);
   });
 });

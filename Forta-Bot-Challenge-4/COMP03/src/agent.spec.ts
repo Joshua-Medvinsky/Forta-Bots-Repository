@@ -103,7 +103,7 @@ describe("Compound 3 bot tests", () => {
       Finding.fromObject({
         name: "Compound III Supply rate notifier",
         description: "Utilzation is " + supplyString + " at the rate of " + supplyAPR + " user should " + action,
-        alertId: "COMPOUND-SUPPLY-RATE-123",
+        alertId: "COMP-03",
         severity: FindingSeverity.Info,
         type: FindingType.Info,
         protocol: "CompoundV3",
@@ -137,7 +137,7 @@ describe("Compound 3 bot tests", () => {
       Finding.fromObject({
         name: "Compound III Supply rate notifier",
         description: "Utilzation is " + supplyString + " at the rate of " + supplyAPR + " user should " + action,
-        alertId: "COMPOUND-SUPPLY-RATE-123",
+        alertId: "COMP-03",
         severity: FindingSeverity.Info,
         type: FindingType.Info,
         protocol: "CompoundV3",
@@ -220,7 +220,7 @@ describe("Compound 3 bot tests", () => {
       Finding.fromObject({
         name: "Compound III Supply rate notifier",
         description: "Utilzation is " + supplyString + " at the rate of " + supplyAPR + " user should " + action,
-        alertId: "COMPOUND-SUPPLY-RATE-123",
+        alertId: "COMP-03",
         severity: FindingSeverity.Info,
         type: FindingType.Info,
         protocol: "CompoundV3",
@@ -253,7 +253,7 @@ describe("Compound 3 bot tests", () => {
       Finding.fromObject({
         name: "Compound III Supply rate notifier",
         description: "Utilzation is " + supplyString + " at the rate of " + supplyAPR + " user should " + action,
-        alertId: "COMPOUND-SUPPLY-RATE-123",
+        alertId: "COMP-03",
         severity: FindingSeverity.Info,
         type: FindingType.Info,
         protocol: "CompoundV3",
