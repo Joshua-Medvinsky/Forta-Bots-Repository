@@ -1,6 +1,6 @@
 import { ethers, Contract, BigNumber } from "ethers";
 import { Finding, FindingSeverity, FindingType } from "forta-agent";
-import { L2_FUNCTION_SIGNATURE, L2_TOKEN_ADDRESS_MAKER_DAO } from "./constants";
+import { TOTAL_SUPPLY_FUNCTION_ABI, L2_DAI_ADDRESS } from "./constants";
 import { AlertInput } from "forta-agent-tools/lib/utils";
 
 export const getL1Finding = async (
@@ -43,8 +43,8 @@ export const checkBlock = async (
   alert: any,
 ): Promise<Array<Finding>> => {
   const l2Contract = new Contract(
-    L2_TOKEN_ADDRESS_MAKER_DAO,
-    L2_FUNCTION_SIGNATURE,
+    L2_DAI_ADDRESS,
+    TOTAL_SUPPLY_FUNCTION_ABI,
     provider,
   );
   const l2Balance = await l2Contract.totalSupply({ blockTag: blockNumber });
