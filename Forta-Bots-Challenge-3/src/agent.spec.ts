@@ -16,11 +16,11 @@ import {
   L2_FUNCTION_SIGNATURE,
   L1_ESCROW_FUNCTION_SIGNATURE,
   L2_TOKEN_ADDRESS_MAKER_DAO,
-  AlertInput,
   BOT_ID,
 } from "./constants";
 import { MockEthersProvider } from "forta-agent-tools/lib/test";
 import { createAddress } from "forta-agent-tools";
+import { AlertInput } from "forta-agent-tools/lib/utils";
 import { BigNumber } from "ethers";
 import { provideHandleBlock } from "./agent";
 const networkA = "Arbitrum";
@@ -55,7 +55,9 @@ const getAlertInput = (): AlertInput => {
     name: "L1_ESCROW_ALERT",
     severity: "Info",
     alertDocumentType: "Alert",
-    botId: BOT_ID,
+    source: {
+      bot: {id: BOT_ID},
+    },
     metadata: {
       escrowBalanceOptimism: MOCK_VALUES_1.OPTIMISM_L1_ESCROW_BAL,
       escrowBalanceArbitrum: MOCK_VALUES_1.ARBITRUM_L1_ESCROW_BAL,

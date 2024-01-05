@@ -13,21 +13,3 @@ export const L2_TOKEN_ADDRESS_MAKER_DAO =
   "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1";
 
 export const BOT_ID = "";
-
-export declare type AlertInput = {
-  addresses?: string[];
-  alertId?: string;
-  hash?: string;
-  createdAt?: string;
-  description?: string;
-  findingType?: string;
-  name?: string;
-  protocol?: string;
-  scanNodeCount?: number;
-  severity?: string;
-  alertDocumentType?: string;
-  relatedAlerts?: string[];
-  chainId?: number;
-  botId?: string;
-  metadata?: any;
-};
