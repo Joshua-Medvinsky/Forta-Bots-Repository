@@ -6,9 +6,9 @@ import {
   Initialize,
 } from "forta-agent";
 import {
-  L1_DAI_ADDRESS,
+  DAI_ADDRESS,
   L1_ESCROW_ARBITRUM,
-  BALANCE_OF_FUNCTION_ABI,
+  L1_ESCROW_FUNCTION_SIGNATURE,
   L1_ESCROW_OPTIMISM,
   BOT_ID,
 } from "./constants";
@@ -33,8 +33,8 @@ export function provideHandleBlock(
     try {
       if (chainId == 1) {
         const daiContract = new Contract(
-          L1_DAI_ADDRESS,
-          BALANCE_OF_FUNCTION_ABI,
+          DAI_ADDRESS,
+          L1_ESCROW_FUNCTION_SIGNATURE,
           provider,
         );
         findings.push(

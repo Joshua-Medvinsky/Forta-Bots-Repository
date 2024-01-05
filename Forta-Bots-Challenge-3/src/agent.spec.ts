@@ -12,10 +12,10 @@ import {
 import {
   L1_ESCROW_ARBITRUM,
   L1_ESCROW_OPTIMISM,
-  L1_DAI_ADDRESS,
-  TOTAL_SUPPLY_FUNCTION_ABI,
-  BALANCE_OF_FUNCTION_ABI,
-  L2_DAI_ADDRESS,
+  DAI_ADDRESS,
+  L2_FUNCTION_SIGNATURE,
+  L1_ESCROW_FUNCTION_SIGNATURE,
+  L2_TOKEN_ADDRESS_MAKER_DAO,
   AlertInput,
   BOT_ID,
 } from "./constants";
@@ -69,8 +69,8 @@ const alert = Alert.fromObject(getAlertInput());
 const alerts: Alert[] = [];
 alerts.push(alert);
 
-const L1_PROXY = new ethers.utils.Interface(BALANCE_OF_FUNCTION_ABI);
-const L2_PROXY = new ethers.utils.Interface(TOTAL_SUPPLY_FUNCTION_ABI);
+const L1_PROXY = new ethers.utils.Interface(L1_ESCROW_FUNCTION_SIGNATURE);
+const L2_PROXY = new ethers.utils.Interface(L2_FUNCTION_SIGNATURE);
 
 describe("MakerDAO’s Bridge Invariant checks", () => {
   let handleBlock: HandleBlock;
@@ -89,11 +89,11 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
     });
     mockProvider.setNetwork(1);
     mockProvider
-      .addCallTo(L1_DAI_ADDRESS, blockNumber, L1_PROXY, "balanceOf", {
+      .addCallTo(DAI_ADDRESS, blockNumber, L1_PROXY, "balanceOf", {
         inputs: [L1_ESCROW_OPTIMISM],
         outputs: [MOCK_VALUES_1.OPTIMISM_L1_ESCROW_BAL],
       })
-      .addCallTo(L1_DAI_ADDRESS, blockNumber, L1_PROXY, "balanceOf", {
+      .addCallTo(DAI_ADDRESS, blockNumber, L1_PROXY, "balanceOf", {
         inputs: [L1_ESCROW_ARBITRUM],
         outputs: [MOCK_VALUES_1.ARBITRUM_L1_ESCROW_BAL],
       });
@@ -123,7 +123,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
     });
     mockProvider.setNetwork(networkOChainID);
     mockProvider.addCallTo(
-      L2_DAI_ADDRESS,
+      L2_TOKEN_ADDRESS_MAKER_DAO,
       blockNumber,
       L2_PROXY,
       "totalSupply",
@@ -145,7 +145,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
     });
     mockProvider.setNetwork(networkAChainID);
     mockProvider.addCallTo(
-      L2_DAI_ADDRESS,
+      L2_TOKEN_ADDRESS_MAKER_DAO,
       blockNumber,
       L2_PROXY,
       "totalSupply",
@@ -168,7 +168,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
 
     mockProvider.setNetwork(networkOChainID);
     mockProvider.addCallTo(
-      L2_DAI_ADDRESS,
+      L2_TOKEN_ADDRESS_MAKER_DAO,
       blockNumber,
       L2_PROXY,
       "totalSupply",
@@ -203,7 +203,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
     });
     mockProvider.setNetwork(networkAChainID);
     mockProvider.addCallTo(
-      L2_DAI_ADDRESS,
+      L2_TOKEN_ADDRESS_MAKER_DAO,
       blockNumber,
       L2_PROXY,
       "totalSupply",
