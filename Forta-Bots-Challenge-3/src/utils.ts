@@ -1,13 +1,17 @@
 import { ethers, Contract, BigNumber } from "ethers";
-import { Finding, FindingSeverity, FindingType } from "forta-agent";
-import { L2_FUNCTION_SIGNATURE, L2_TOKEN_ADDRESS_MAKER_DAO } from "./constants";
-import { AlertInput } from "forta-agent-tools/lib/utils";
+import { Finding, FindingSeverity, FindingType, Alert } from "forta-agent";
+import {
+  L2_FUNCTION_SIGNATURE,
+  L2_TOKEN_ADDRESS_MAKER_DAO,
+  previousBalances,
+} from "./constants";
 
 export const getL1Finding = async (
   daiContract: Contract,
   blockNumber: number,
   escrowAddressArbitrum: string,
   escrowAddressOptimism: string,
+  previousBalances: previousBalances,
 ) => {
   const arbitrumBalance: BigNumber = await daiContract.balanceOf(
     escrowAddressArbitrum,
@@ -22,25 +26,35 @@ export const getL1Finding = async (
     },
   );
 
-  return Finding.fromObject({
-    name: `Combined supply of optimism and Arbitrum MakerDao escrows on layer 1`,
-    description: `Escrow balances: Arbitrum: ${arbitrumBalance} Optimism: ${optimismBalance}`,
-    alertId: "new block check escrows on layer 1",
-    severity: FindingSeverity.Info,
-    type: FindingType.Info,
-    protocol: "Ethereum",
-    metadata: {
-      escrowBalanceOptimism: `${optimismBalance}`,
-      escrowBalanceArbitrum: `${arbitrumBalance}`,
-    },
-  });
+  if (
+    previousBalances.prevArbitrumBalance != arbitrumBalance &&
+    previousBalances.prevOptimismBalance != optimismBalance
+  ) {
+    previousBalances.prevArbitrumBalance = arbitrumBalance;
+    previousBalances.prevOptimismBalance = optimismBalance;
+    previousBalances.previousBlockNumber = blockNumber;
+
+    return Finding.fromObject({
+      name: `Combined supply of optimism and Arbitrum MakerDao escrows on layer 1`,
+      description: `Escrow balances: Arbitrum: ${arbitrumBalance} Optimism: ${optimismBalance}`,
+      alertId: "new block check escrows on layer 1",
+      severity: FindingSeverity.Info,
+      type: FindingType.Info,
+      protocol: "Ethereum",
+      metadata: {
+        escrowBalanceOptimism: `${optimismBalance}`,
+        escrowBalanceArbitrum: `${arbitrumBalance}`,
+      },
+    });
+  }
+  return [];
 };
 
 export const checkBlock = async (
   provider: ethers.providers.Provider,
   blockNumber: number,
   chainId: number,
-  alert: any,
+  alert: Alert[],
 ): Promise<Array<Finding>> => {
   const l2Contract = new Contract(
     L2_TOKEN_ADDRESS_MAKER_DAO,

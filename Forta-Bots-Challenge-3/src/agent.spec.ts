@@ -8,7 +8,6 @@ import {
   Alert,
   Block,
   Initialize,
-  //getAlerts,
 } from "forta-agent";
 import {
   L1_ESCROW_ARBITRUM,
@@ -24,7 +23,7 @@ import { createAddress } from "forta-agent-tools";
 import { AlertInput } from "forta-agent-tools/lib/utils";
 import { BigNumber } from "ethers";
 import { provideHandleBlock, provideInitialize } from "./agent";
-import { mock } from "node:test";
+
 const networkA = "Arbitrum";
 const networkO = "Optimism";
 

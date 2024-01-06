@@ -11,15 +11,20 @@ import {
   L1_ESCROW_FUNCTION_SIGNATURE,
   L1_ESCROW_OPTIMISM,
   BOT_ID,
+  previousBalances,
 } from "./constants";
-import { ethers, Contract } from "ethers";
+import { ethers, Contract, BigNumber } from "ethers";
 import { getL1Finding, checkBlock } from "./utils";
 let chainId: number;
+let prevBal: previousBalances = {
+  previousBlockNumber: 0,
+  prevArbitrumBalance: BigNumber.from(0),
+  prevOptimismBalance: BigNumber.from(0),
+};
 
 export function provideInitialize(provider: ethers.providers.Provider) {
   return async function initialize() {
     const networkInfo = await provider.getNetwork();
-
     chainId = networkInfo.chainId;
   };
 }
@@ -38,14 +43,19 @@ export function provideHandleBlock(
           L1_ESCROW_FUNCTION_SIGNATURE,
           provider,
         );
-        findings.push(
-          await getL1Finding(
-            daiContract,
-            block.blockNumber,
-            L1_ESCROW_ARBITRUM,
-            L1_ESCROW_OPTIMISM,
-          ),
+        const result = await getL1Finding(
+          daiContract,
+          block.blockNumber,
+          L1_ESCROW_ARBITRUM,
+          L1_ESCROW_OPTIMISM,
+          prevBal,
         );
+
+        if (Array.isArray(result)) {
+          findings.push(...result);
+        } else if (result instanceof Finding) {
+          findings.push(result);
+        }
       } else {
         //Listen to alerts
         const alerts = await getAlerts({
