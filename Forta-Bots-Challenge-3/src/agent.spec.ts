@@ -7,6 +7,7 @@ import {
   createBlockEvent,
   Alert,
   Block,
+  Initialize,
   //getAlerts,
 } from "forta-agent";
 import {
@@ -22,7 +23,8 @@ import { MockEthersProvider } from "forta-agent-tools/lib/test";
 import { createAddress } from "forta-agent-tools";
 import { AlertInput } from "forta-agent-tools/lib/utils";
 import { BigNumber } from "ethers";
-import { provideHandleBlock } from "./agent";
+import { provideHandleBlock, provideInitialize } from "./agent";
+import { mock } from "node:test";
 const networkA = "Arbitrum";
 const networkO = "Optimism";
 
@@ -56,7 +58,7 @@ const getAlertInput = (): AlertInput => {
     severity: "Info",
     alertDocumentType: "Alert",
     source: {
-      bot: {id: BOT_ID},
+      bot: { id: BOT_ID },
     },
     metadata: {
       escrowBalanceOptimism: MOCK_VALUES_1.OPTIMISM_L1_ESCROW_BAL,
@@ -78,18 +80,22 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   let handleBlock: HandleBlock;
   let provider: any;
   let mockProvider: any;
+  let initialize: Initialize;
 
   beforeEach(() => {
     mockProvider = new MockEthersProvider();
     provider = mockProvider as unknown as ethers.providers.Provider;
+    initialize = provideInitialize(mockProvider);
   });
 
   it("eth network balance check", async () => {
+    mockProvider.setNetwork(1);
+    await initialize();
     handleBlock = provideHandleBlock(provider, () => alerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
-    mockProvider.setNetwork(1);
+
     mockProvider
       .addCallTo(DAI_ADDRESS, blockNumber, L1_PROXY, "balanceOf", {
         inputs: [L1_ESCROW_OPTIMISM],
@@ -119,11 +125,13 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   });
 
   it("returns empty findings if the layer one escrow dai balance is greater than Optimism Layer 2 supply", async () => {
+    mockProvider.setNetwork(networkOChainID);
+    await initialize();
     handleBlock = provideHandleBlock(provider, () => alerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
-    mockProvider.setNetwork(networkOChainID);
+
     mockProvider.addCallTo(
       L2_TOKEN_ADDRESS_MAKER_DAO,
       blockNumber,
@@ -141,11 +149,13 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   });
 
   it("returns empty findings if the layer one escrow dai balance is greater than Arbitrum Layer 2 supply", async () => {
+    mockProvider.setNetwork(networkAChainID);
+    await initialize();
     handleBlock = provideHandleBlock(provider, () => alerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
-    mockProvider.setNetwork(networkAChainID);
+
     mockProvider.addCallTo(
       L2_TOKEN_ADDRESS_MAKER_DAO,
       blockNumber,
@@ -163,12 +173,13 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   });
 
   it("returns a finding if the optimism layer 2 dai supply is more then the layer 1 escrow dai balance", async () => {
+    mockProvider.setNetwork(networkOChainID);
+    await initialize();
     handleBlock = provideHandleBlock(provider, () => alerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
 
-    mockProvider.setNetwork(networkOChainID);
     mockProvider.addCallTo(
       L2_TOKEN_ADDRESS_MAKER_DAO,
       blockNumber,
@@ -199,11 +210,13 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   });
 
   it("returns a finding if the arbitrum layer 2 dai supply is more then the layer 1 escrow dai balance", async () => {
+    mockProvider.setNetwork(networkAChainID);
+    await initialize();
     handleBlock = provideHandleBlock(provider, () => alerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
-    mockProvider.setNetwork(networkAChainID);
+
     mockProvider.addCallTo(
       L2_TOKEN_ADDRESS_MAKER_DAO,
       blockNumber,

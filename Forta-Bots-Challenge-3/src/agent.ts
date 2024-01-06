@@ -3,7 +3,7 @@ import {
   HandleBlock,
   getEthersProvider,
   BlockEvent,
-  Initialize,
+  getAlerts,
 } from "forta-agent";
 import {
   DAI_ADDRESS,
@@ -14,21 +14,22 @@ import {
 } from "./constants";
 import { ethers, Contract } from "ethers";
 import { getL1Finding, checkBlock } from "./utils";
+let chainId: number;
+
+export function provideInitialize(provider: ethers.providers.Provider) {
+  return async function initialize() {
+    const networkInfo = await provider.getNetwork();
+
+    chainId = networkInfo.chainId;
+  };
+}
 
 export function provideHandleBlock(
   provider: ethers.providers.Provider,
   getAlerts: any,
 ): HandleBlock {
-  let chainId: number;
-
-  const initialize: Initialize = async () => {
-    const networkInfo = await provider.getNetwork();
-    chainId = networkInfo.chainId;
-  };
-
   return async function handleBlock(block: BlockEvent): Promise<Finding[]> {
     const findings: Finding[] = [];
-    await initialize();
 
     try {
       if (chainId == 1) {
@@ -73,5 +74,6 @@ export function provideHandleBlock(
 }
 
 export default {
-  handleBlock: provideHandleBlock(getEthersProvider(), () => alert),
+  handleBlock: provideHandleBlock(getEthersProvider(), getAlerts),
+  initialize: provideInitialize(getEthersProvider()),
 };
