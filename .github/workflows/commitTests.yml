@@ -20,11 +20,11 @@ jobs:
           node-version: "16"
     
       - name: Install Forta dependencies
-        working-directory: ./
+        working-directory: ""
         shell: bash
         run: npm install
     
       - name: Run tests
-        working-directory: ./
+        working-directory: ""
         shell: bash
         run: npm run test
