@@ -72,6 +72,13 @@ const alert = Alert.fromObject(getAlertInput());
 const alerts: Alert[] = [];
 alerts.push(alert);
 
+const mockGetAlerts = jest.fn();
+
+// Mock implementation for getAlerts
+mockGetAlerts.mockResolvedValue({
+  alerts: [...alerts],
+});
+
 const L1_PROXY = new ethers.utils.Interface(L1_ESCROW_FUNCTION_SIGNATURE);
 const L2_PROXY = new ethers.utils.Interface(L2_FUNCTION_SIGNATURE);
 
@@ -90,7 +97,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   it("eth network balance check", async () => {
     mockProvider.setNetwork(1);
     await initialize();
-    handleBlock = provideHandleBlock(provider, () => alerts);
+    handleBlock = provideHandleBlock(provider, mockGetAlerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
@@ -126,7 +133,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   it("returns empty findings if the layer one escrow dai balance is greater than Optimism Layer 2 supply", async () => {
     mockProvider.setNetwork(networkOChainID);
     await initialize();
-    handleBlock = provideHandleBlock(provider, () => alerts);
+    handleBlock = provideHandleBlock(provider, mockGetAlerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
@@ -150,7 +157,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   it("returns empty findings if the layer one escrow dai balance is greater than Arbitrum Layer 2 supply", async () => {
     mockProvider.setNetwork(networkAChainID);
     await initialize();
-    handleBlock = provideHandleBlock(provider, () => alerts);
+    handleBlock = provideHandleBlock(provider, mockGetAlerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
@@ -174,7 +181,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   it("returns a finding if the optimism layer 2 dai supply is more then the layer 1 escrow dai balance", async () => {
     mockProvider.setNetwork(networkOChainID);
     await initialize();
-    handleBlock = provideHandleBlock(provider, () => alerts);
+    handleBlock = provideHandleBlock(provider, mockGetAlerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });
@@ -211,7 +218,7 @@ describe("MakerDAO’s Bridge Invariant checks", () => {
   it("returns a finding if the arbitrum layer 2 dai supply is more then the layer 1 escrow dai balance", async () => {
     mockProvider.setNetwork(networkAChainID);
     await initialize();
-    handleBlock = provideHandleBlock(provider, () => alerts);
+    handleBlock = provideHandleBlock(provider, mockGetAlerts);
     const blockEvent = createBlockEvent({
       block: { hash: createAddress("0x123"), number: blockNumber } as Block,
     });

@@ -4,6 +4,7 @@ import {
   getEthersProvider,
   BlockEvent,
   getAlerts,
+  GetAlerts,
 } from "forta-agent";
 import {
   DAI_ADDRESS,
@@ -31,7 +32,7 @@ export function provideInitialize(provider: ethers.providers.Provider) {
 
 export function provideHandleBlock(
   provider: ethers.providers.Provider,
-  getAlerts: any,
+  getAlerts: GetAlerts,
 ): HandleBlock {
   return async function handleBlock(block: BlockEvent): Promise<Finding[]> {
     const findings: Finding[] = [];
@@ -68,7 +69,7 @@ export function provideHandleBlock(
           provider,
           block.blockNumber,
           chainId,
-          alerts,
+          alerts.alerts,
         );
 
         if (blockFindings.length > 0) {
