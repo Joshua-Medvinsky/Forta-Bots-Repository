@@ -19,11 +19,11 @@ jobs:
           node-version: "16"
     
       - name: Install Forta dependencies
-        working-directory: ./Forta-Bots-Challenge-1
+        working-directory: ./Forta-Bots-Challenge-2
         shell: bash
         run: npm install
     
       - name: Run tests
-        working-directory: ./Forta-Bots-Challenge-1
+        working-directory: ./Forta-Bots-Challenge-2
         shell: bash
         run: npm run test
