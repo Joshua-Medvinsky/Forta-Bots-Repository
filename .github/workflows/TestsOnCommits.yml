@@ -6,9 +6,9 @@ on:
       - master
 
 jobs:
-  # unit tests
+
   tests:
-    name: "Unit tests"
+    name: "TestsOnCommits"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -19,11 +19,11 @@ jobs:
           node-version: "16"
     
       - name: Install Forta dependencies
-        working-directory: ./Forta-Bots-Challenge-2
+        working-directory: ./Forta-Bots-Challenge-1
         shell: bash
         run: npm install
     
       - name: Run tests
-        working-directory: ./Forta-Bots-Challenge-2
+        working-directory: ./Forta-Bots-Challenge-1
         shell: bash
         run: npm run test
