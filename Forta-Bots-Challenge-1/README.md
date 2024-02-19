@@ -1,4 +1,4 @@
-# Forta-Bots-Challenges
+# Bot Deployment Detector
 
 ## Description
 
