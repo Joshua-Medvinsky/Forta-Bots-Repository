@@ -1,4 +1,4 @@
-# Compound III Proposal
+# Compound III Bots
 
 ## Summary
 - Compound III FORTA bots to track supply rates and user investments and rewards.
