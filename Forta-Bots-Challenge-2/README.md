@@ -1,4 +1,4 @@
-# Forta-Bots-Challenges
+# Uniswap V3 Swap Detector
 
 ## Description
 
