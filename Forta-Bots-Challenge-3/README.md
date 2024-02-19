@@ -1,4 +1,4 @@
-# Forta-Bots-Challenges
+# MakerDAO invariant Bot
 
 ## Description
 
