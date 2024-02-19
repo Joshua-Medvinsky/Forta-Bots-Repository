@@ -1,4 +1,4 @@
-# MakerDAO invariant Bot
+# MakerDAO Invariant Bot
 
 ## Description
 
